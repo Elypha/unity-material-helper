@@ -29,7 +29,7 @@ jobs:
 
       - name: Create Zip
         run: |
-          zip -r ${{ env.zipFile }} .
+          zip -r ${{ env.zipFile }} . -x ".git/*"
 
       - run: find ./ -name \*.meta >> metaList
 
