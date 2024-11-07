@@ -1,0 +1,15 @@
+{
+    "name": "com.elypha.vpm.material-helper",
+    "displayName": "Material Helper",
+    "description": "A helper tool to to work with Unity's Material system.",
+    "author": {
+        "name": "Elypha",
+        "email": "i@elypha.com",
+        "url": "https://elypha.com"
+    },
+    "url": "https://github.com/Elypha/vpm.material-helper",
+    "version": "1.0.0",
+    "unity": "2020.3",
+    "vpmDependencies": {},
+    "dependencies": {}
+}

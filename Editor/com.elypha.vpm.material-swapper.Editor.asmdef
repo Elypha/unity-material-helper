@@ -1,0 +1,11 @@
+{
+    "name": "com.elypha.vpm.material-swapper.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "autoReferenced": false,
+    "noEngineReferences": false
+}
