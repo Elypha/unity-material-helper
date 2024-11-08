@@ -62,6 +62,8 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void LoadData()
     {
+        Unfocus();
+
         uniqueMaterials.Clear();
         materialSwapMap.Clear();
         var renderers = outfitObject.GetComponentsInChildren<SkinnedMeshRenderer>();
@@ -84,10 +86,13 @@ public class MaterialBulkSwapper : EditorWindow
         uniqueMaterials.Sort((a, b) => a.name.CompareTo(b.name));
 
         clipNextFrame = animationClip.empty ? 0 : (int)(animationClip.length * animationClip.frameRate);
+        targetFrameNumber = clipNextFrame;
     }
 
     private void AddMaterialSwapKeyframes()
     {
+        Unfocus();
+
         var renderers = outfitObject.GetComponentsInChildren<SkinnedMeshRenderer>();
 
         foreach (SkinnedMeshRenderer renderer in renderers)
@@ -155,4 +160,6 @@ public class MaterialBulkSwapper : EditorWindow
 
         return string.Join("/", pathStack);
     }
+
+    private void Unfocus() => GUI.FocusControl(null);
 }
