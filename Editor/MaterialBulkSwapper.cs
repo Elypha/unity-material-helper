@@ -419,7 +419,7 @@ namespace Elypha
             }
 
             AssetDatabase.SaveAssets();
-            LoadMaterials();
+            LoadAnimationClip();
         }
 
         private void ApplyInPlaceMaterialOriginal()

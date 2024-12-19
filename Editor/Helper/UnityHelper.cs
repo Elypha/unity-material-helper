@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
 
 namespace Elypha.Helper
@@ -67,6 +68,37 @@ namespace Elypha.Helper
                 // Recursively check children
                 ScanSkinnedMeshRenderers(child, results);
             }
+        }
+
+        public static bool IsDefaultTransform(Transform transform)
+        {
+            return transform.localPosition == Vector3.zero
+                && transform.localRotation == Quaternion.identity
+                && transform.localScale == Vector3.one;
+        }
+
+        public static Transform GetPhysBoneRoot(VRCPhysBone physBone)
+        {
+            if (physBone.rootTransform != null) return physBone.rootTransform;
+            return physBone.transform;
+        }
+
+        public static Transform GetPhysBoneColliderRoot(VRCPhysBoneCollider physBoneCollider)
+        {
+            // If rootTransform is not set || set to itself, use the parent transform
+            if (physBoneCollider.rootTransform == null || physBoneCollider.rootTransform == physBoneCollider.transform)
+            {
+                if (IsDefaultTransform(physBoneCollider.transform))
+                {
+                    return physBoneCollider.transform.parent.transform;
+                }
+
+                Debug.LogError($"PhysBoneCollider: {physBoneCollider.name} already has transform set");
+                return physBoneCollider.transform.parent.transform;
+            }
+
+            // If rootTransform is set to any other, use the rootTransform
+            return physBoneCollider.rootTransform;
         }
 
     }
