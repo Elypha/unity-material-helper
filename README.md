@@ -2,4 +2,6 @@
 
 This repo only holds the src files.
 
-Please refer to https://github.com/Elypha/unity-helper for information.
+For changelog, please check out https://github.com/Elypha/unity-material-helper/releases.
+
+For installation and more information, please refer to the main repo https://github.com/Elypha/unity-helper.
