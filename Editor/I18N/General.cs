@@ -7,6 +7,7 @@ namespace Elypha.I18N
     public enum PluginLanguage
     {
         English,
+        ChineseSimplified,
         Japanese,
     }
 }
