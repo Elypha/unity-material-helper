@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write  # required for labelling PRs as of 2025-07
     runs-on: ubuntu-latest
     steps:
       # (Optional) GitHub Enterprise requires GHE_HOST variable set
