@@ -1,0 +1,64 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  packageName: "com.elypha.vpm.material-helper"
+  pagesRepo: "Elypha/vpm-packages"
+  # runtime variables
+  packageVersion: "0.0.0"
+
+jobs:
+  build-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: "true"
+
+      - name: Prepare package information
+        id: info
+        run: |
+          packageVersion=$(jq -r '.version' package.json)
+          echo "zipName=${{ env.packageName }}-${packageVersion}.zip" >> $GITHUB_OUTPUT
+          echo "unitypackageName=${{ env.packageName }}-${packageVersion}.unitypackage" >> $GITHUB_OUTPUT
+
+      # <ref: create unitypackage https://github.com/pCYSl5EDgo/create-unitypackage
+      - name: Set metadata list
+        run: find ./ -name \*.meta >> metaList
+      - name: Create .unitypackage
+        uses: pCYSl5EDgo/create-unitypackage@b5c57408698b1fab8b3a84d4b67f767b8b7c0be9
+        with:
+          package-path: ${{ steps.info.outputs.unitypackageName }}
+          include-files: metaList
+      # />
+
+      - name: Create zip
+        run: zip -r ${{ steps.info.outputs.zipName }} . -x ".git/*" ".github/*"
+
+      - name: Make Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.info.outputs.zipName }}
+            ${{ steps.info.outputs.unitypackageName }}
+            package.json
+
+  notify-page-build:
+    runs-on: ubuntu-latest
+    needs: build-assets
+    steps:
+      - name: Dispatch Pages build notification
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PAT_PAGES_REBUILD }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ env.pagesRepo }}/dispatches" \
+            -d '{"event_type":"pages-rebuild", "client_payload": {"release_version": "${{ github.ref_name }}", "package_version": "${{ env.packageVersion }}"}}'
