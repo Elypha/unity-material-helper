@@ -18,6 +18,7 @@ public class FullToggleGeneratorWindow : EditorWindow
     private Vector2 scrollPosition;
 
     private AnimationClip targetClip;
+    private GameObject assumedRootObject;
     private readonly List<GameObjectGroup> objectGroups = new();
     private void ObjectGroupsAddNew() => objectGroups.Add(new GameObjectGroup() { groupName = $"Group {objectGroups.Count + 1}" });
 
@@ -48,11 +49,12 @@ public class FullToggleGeneratorWindow : EditorWindow
         RenderObjectGroups();
 
         EditorGUILayout.Space(10);
-
         GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
         targetClip = (AnimationClip)EditorGUILayout.ObjectField(targetClip, typeof(AnimationClip), false);
 
         EditorGUILayout.Space(10);
+        GUILayout.Label("Path relative to", EditorStyles.boldLabel);
+        // assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Avatar Object"), assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
 
         UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
 
@@ -225,7 +227,10 @@ public class FullToggleGeneratorWindow : EditorWindow
                 if (go == null) continue;
 
                 string path = AnimationUtility.CalculateTransformPath(go.transform, null);
-                EditorCurveBinding binding = new EditorCurveBinding
+
+
+
+                EditorCurveBinding binding = new()
                 {
                     path = path,
                     type = typeof(GameObject),
