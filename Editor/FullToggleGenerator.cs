@@ -15,11 +15,16 @@ public class GameObjectGroup
 
 public class FullToggleGeneratorWindow : EditorWindow
 {
+    private Vector2 scrollPosition;
+
     private AnimationClip targetClip;
-    private List<GameObjectGroup> objectGroups = new();
+    private readonly List<GameObjectGroup> objectGroups = new();
     private void ObjectGroupsAddNew() => objectGroups.Add(new GameObjectGroup() { groupName = $"Group {objectGroups.Count + 1}" });
 
-    private Vector2 scrollPosition;
+    private bool showAdvancedSettings = false;
+    private static PluginLanguage language = PluginLanguage.English;
+    private FullToggleGeneratorI18N i18n = new(language);
+
 
     [MenuItem("Tools/Elypha Toolkit/Full Toggle Generator")]
     public static void ShowWindow()
@@ -32,9 +37,6 @@ public class FullToggleGeneratorWindow : EditorWindow
         }
     }
 
-    private bool showAdvancedSettings = false;
-    private static PluginLanguage language = PluginLanguage.English;
-    private FullToggleGeneratorI18N i18n = new(language);
 
     private void OnGUI()
     {
@@ -55,7 +57,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
 
         GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
-        if (GUILayout.Button("Generate Full Toggle Animation", GUILayout.Height(40)))
+        if (GUILayout.Button(i18n.Localise("Generate Full Toggle Animation"), GUILayout.Height(40)))
         {
             try
             {
