@@ -1,0 +1,285 @@
+using UnityEngine;
+using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
+using Elypha.Helper;
+using Elypha.I18N;
+using System;
+
+[System.Serializable]
+public class GameObjectGroup
+{
+    public List<GameObject> gameObjects = new() { null };
+    public string groupName = "Group";
+}
+
+public class FullToggleGeneratorWindow : EditorWindow
+{
+    private AnimationClip targetClip;
+    private List<GameObjectGroup> objectGroups = new();
+    private void ObjectGroupsAddNew() => objectGroups.Add(new GameObjectGroup() { groupName = $"Group {objectGroups.Count + 1}" });
+
+    private Vector2 scrollPosition;
+
+    [MenuItem("Tools/Elypha Toolkit/Full Toggle Generator")]
+    public static void ShowWindow()
+    {
+        var window = GetWindow<FullToggleGeneratorWindow>("Full Toggle Generator");
+        window.minSize = new Vector2(300, 400);
+        if (window.objectGroups.Count == 0)
+        {
+            window.ObjectGroupsAddNew();
+        }
+    }
+
+    private bool showAdvancedSettings = false;
+    private static PluginLanguage language = PluginLanguage.English;
+    private FullToggleGeneratorI18N i18n = new(language);
+
+    private void OnGUI()
+    {
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+        DrawAdvancedSettings();
+
+        UnityHelper.DrawTitle1(i18n.Localise("Settings"));
+        RenderObjectGroups();
+
+        EditorGUILayout.Space(10);
+
+        GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
+        targetClip = (AnimationClip)EditorGUILayout.ObjectField(targetClip, typeof(AnimationClip), false);
+
+        EditorGUILayout.Space(10);
+
+        UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
+
+        GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
+        if (GUILayout.Button("Generate Full Toggle Animation", GUILayout.Height(40)))
+        {
+            try
+            {
+                GenerateFullToggleAnimation();
+            }
+            finally
+            {
+                // make sure to clear the progress bar even if an error occurs
+                EditorUtility.ClearProgressBar();
+            }
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.EndScrollView();
+    }
+
+
+
+
+
+    private void RenderObjectGroups()
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Object Groups", EditorStyles.boldLabel);
+
+        GUI.backgroundColor = new Color(0.6f, 0.8f, 1f);
+        if (GUILayout.Button("＋", new GUILayoutOption[] { GUILayout.Width(40), GUILayout.Height(20) }))
+        {
+            ObjectGroupsAddNew();
+        }
+        GUI.backgroundColor = Color.white;
+        GUILayout.EndHorizontal();
+
+        EditorGUILayout.Space(4);
+
+        for (int i = 0; i < objectGroups.Count; i++)
+        {
+            var group = objectGroups[i];
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            EditorGUILayout.BeginHorizontal();
+            group.groupName = EditorGUILayout.TextField(group.groupName, new GUIStyle()
+            {
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = UnityHelper.ColourTitle2 }
+            });
+
+            GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);
+            if (GUILayout.Button("－", GUILayout.Width(25)))
+            {
+                objectGroups.RemoveAt(i);
+                Repaint();
+                return;
+            }
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(2);
+
+            for (int j = 0; j < group.gameObjects.Count; j++)
+            {
+                EditorGUI.BeginChangeCheck();
+                group.gameObjects[j] = (GameObject)EditorGUILayout.ObjectField(group.gameObjects[j], typeof(GameObject), true);
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (j == group.gameObjects.Count - 1 && group.gameObjects[j] != null)
+                    {
+                        group.gameObjects.Add(null);
+                    }
+                }
+            }
+
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space(4);
+        }
+    }
+
+    private void GenerateFullToggleAnimation()
+    {
+        if (targetClip == null)
+        {
+            EditorUtility.DisplayDialog("Error", "You must select a target Animation Clip.", "OK");
+            return;
+        }
+
+        var validGroups = objectGroups.Where(g => g.gameObjects != null && g.gameObjects.Any(go => go != null)).ToList();
+
+        if (validGroups.Count == 0)
+        {
+            EditorUtility.DisplayDialog("Error", "You must add at least one valid object group with assigned GameObjects.", "OK");
+            return;
+        }
+
+        Undo.RecordObject(targetClip, "Generate Full Toggle Animation");
+
+        targetClip.ClearCurves();
+
+        int frame = 0;
+
+        // a list to hold all possible states
+        List<List<bool>> allStates = new()
+        {
+            // frame 0: all groups disabled
+            Enumerable.Repeat(false, validGroups.Count).ToList(),
+            // frame 1: all groups enabled
+            Enumerable.Repeat(true, validGroups.Count).ToList()
+        };
+
+        // frame 2~: generate combinations of groups to disable
+        for (int numToDisable = 1; numToDisable <= validGroups.Count - 1; numToDisable++)
+        {
+            var combinations = GetCombinations(Enumerable.Range(0, validGroups.Count).ToList(), numToDisable);
+
+            foreach (var combination in combinations)
+            {
+                List<bool> currentStates = Enumerable.Repeat(true, validGroups.Count).ToList();
+                foreach (int indexToDisable in combination)
+                {
+                    currentStates[indexToDisable] = false;
+                }
+                allStates.Add(currentStates);
+            }
+        }
+
+        // Save in a dictionary to avoid multiple calls to AnimationUtility.SetEditorCurve
+        Dictionary<EditorCurveBinding, AnimationCurve> curves = new();
+
+        // Loop through all states and set the curves
+        foreach (var states in allStates)
+        {
+            // Calculate the time for this frame every frame
+            float time = (float)frame / targetClip.frameRate;
+
+            EditorUtility.DisplayProgressBar(
+                "Generating Animation",
+                $"Processing frame {frame}...",
+                (float)frame / allStates.Count);
+
+            SetGroupStates(validGroups, states, time, curves);
+            frame++;
+        }
+
+        // After all states are set, write the curves to the AnimationClip
+        foreach (var a in curves)
+        {
+            AnimationUtility.SetEditorCurve(targetClip, a.Key, a.Value);
+        }
+
+        EditorUtility.ClearProgressBar();
+        EditorUtility.DisplayDialog("Success", $"Done! {frame} frames written to '{targetClip.name}'.", "OK");
+
+        EditorUtility.SetDirty(targetClip);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private void SetGroupStates(List<GameObjectGroup> groups, List<bool> states, float time, Dictionary<EditorCurveBinding, AnimationCurve> curves)
+    {
+        for (int i = 0; i < groups.Count; i++)
+        {
+            foreach (var go in groups[i].gameObjects)
+            {
+                if (go == null) continue;
+
+                string path = AnimationUtility.CalculateTransformPath(go.transform, null);
+                EditorCurveBinding binding = new EditorCurveBinding
+                {
+                    path = path,
+                    type = typeof(GameObject),
+                    propertyName = "m_IsActive"
+                };
+
+                if (!curves.ContainsKey(binding))
+                {
+                    curves[binding] = new AnimationCurve();
+                }
+
+                var curve = curves[binding];
+                float value = states[i] ? 1f : 0f;
+
+                int keyIndex = curve.AddKey(time, value);
+
+                // Set the tangent modes to constant to ensure the state remains constant
+                AnimationUtility.SetKeyLeftTangentMode(curve, keyIndex, AnimationUtility.TangentMode.Constant);
+                AnimationUtility.SetKeyRightTangentMode(curve, keyIndex, AnimationUtility.TangentMode.Constant);
+            }
+        }
+    }
+
+    private IEnumerable<IEnumerable<T>> GetCombinations<T>(IEnumerable<T> list, int k)
+    {
+        if (k == 0)
+            return new[] { new T[0] };
+
+        return list.SelectMany((e, i) =>
+            GetCombinations(list.Skip(i + 1), k - 1).Select(c => (new[] { e }).Concat(c)));
+    }
+
+
+
+    private void DrawAdvancedSettings()
+    {
+        showAdvancedSettings = EditorGUILayout.Foldout(
+            showAdvancedSettings,
+            "Advanced Settings",
+            true,
+            new GUIStyle(EditorStyles.foldout)
+            {
+                fontStyle = FontStyle.Bold
+            }
+        );
+
+        if (showAdvancedSettings)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Language", GUILayout.Width(100));
+            language = (PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
+            if (language != i18n.language)
+            {
+                i18n = new FullToggleGeneratorI18N(language);
+            }
+            GUILayout.EndHorizontal();
+        }
+    }
+}
