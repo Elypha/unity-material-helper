@@ -10,7 +10,8 @@ namespace Elypha.Helper
 {
     public static class UnityHelper
     {
-        public static Color ColourTitle = new(230 / 255f, 194 / 255f, 153 / 255f);
+        public static Color ColourTitle1 = new(230 / 255f, 194 / 255f, 153 / 255f);
+        public static Color ColourTitle2 = new(130 / 255f, 187 / 255f, 255 / 255f);
         public static Color ColourBold = new(210 / 255f, 210 / 255f, 210 / 255f);
 
         public static void Separator(Color color, int thickness = 2, int paddingTop = 4, int paddingBottom = 4)
@@ -99,6 +100,13 @@ namespace Elypha.Helper
 
             // If rootTransform is set to any other, use the rootTransform
             return physBoneCollider.rootTransform;
+        }
+
+        public static void DrawTitle1(string title, float spacePixels = 8)
+        {
+            GUILayout.Space(spacePixels);
+            LabelBoldColored($"# {title}", ColourTitle1);
+            Separator(Color.grey, 1, 0, 4);
         }
 
     }

@@ -80,7 +80,7 @@ namespace Elypha
                 GUILayout.EndHorizontal();
             }
 
-            UnityHelper.LabelBoldColored("# Settings", UnityHelper.ColourTitle);
+            UnityHelper.LabelBoldColored("# Settings", UnityHelper.ColourTitle1);
             UnityHelper.Separator(Color.grey, 1, 0, 4);
 
 
@@ -108,7 +108,7 @@ namespace Elypha
 
 
             GUILayout.Space(8);
-            UnityHelper.LabelBoldColored("# Edit", UnityHelper.ColourTitle);
+            UnityHelper.LabelBoldColored("# Edit", UnityHelper.ColourTitle1);
             UnityHelper.Separator(Color.grey, 1, 0, 4);
 
             // Renderers
@@ -208,7 +208,7 @@ namespace Elypha
 
 
             GUILayout.Space(8);
-            UnityHelper.LabelBoldColored("# Select Action", UnityHelper.ColourTitle);
+            UnityHelper.LabelBoldColored("# Select Action", UnityHelper.ColourTitle1);
             UnityHelper.Separator(Color.grey, 1, 0, 4);
 
             // Actions

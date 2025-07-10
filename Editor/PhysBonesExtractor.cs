@@ -50,7 +50,7 @@ namespace Elypha
                 ExtractPhysBones();
             }
 
-            UnityHelper.LabelBoldColored("# Status", UnityHelper.ColourTitle);
+            UnityHelper.LabelBoldColored("# Status", UnityHelper.ColourTitle1);
 
             if (armatureStatus != null && armatureStatus.Count > 0)
             {
@@ -64,7 +64,7 @@ namespace Elypha
                 EditorGUILayout.LabelField("No status");
             }
 
-            UnityHelper.LabelBoldColored("# Diff", UnityHelper.ColourTitle);
+            UnityHelper.LabelBoldColored("# Diff", UnityHelper.ColourTitle1);
             // left only
             if (leftOnly != null && leftOnly.Count > 0)
             {
