@@ -47,7 +47,6 @@ namespace Elypha
             window.minSize = new Vector2(400, 400);
 
             window.i18n = new MaterialBulkSwapperI18N(language);
-            window._t = window.i18n._t;
         }
 
 
