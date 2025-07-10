@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  pagesRepo: "Elypha/vpm-packages"
+  pagesRepo: "Elypha/unity-helper"
 
 jobs:
   notify-page-build:
