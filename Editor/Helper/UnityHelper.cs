@@ -14,14 +14,23 @@ namespace Elypha.Helper
         public static Color ColourTitle2 = new(130 / 255f, 187 / 255f, 255 / 255f);
         public static Color ColourBold = new(210 / 255f, 210 / 255f, 210 / 255f);
 
-        public static void Separator(Color color, int thickness = 2, int paddingTop = 4, int paddingBottom = 4)
+
+        public static readonly GUILayoutOption[] LayoutExpanded = new GUILayoutOption[] {
+            GUILayout.ExpandWidth(true),
+            GUILayout.MinWidth(300),
+        };
+
+        public static readonly GUIStyle LabelStyleCentred = new(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
+
+
+        public static void Separator(Color colour, int thickness = 2, int paddingTop = 4, int paddingBottom = 4)
         {
             Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(paddingTop + paddingBottom + thickness));
             r.height = thickness;
             r.y += paddingTop;
             r.x -= 2;
             r.width += 6;
-            EditorGUI.DrawRect(r, color);
+            EditorGUI.DrawRect(r, colour);
         }
 
         public static void LabelBoldColored(string label, Color color)

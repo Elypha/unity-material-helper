@@ -17,6 +17,7 @@ public class FullToggleGeneratorWindow : EditorWindow
 {
     private Vector2 scrollPosition;
 
+    private GameObject assumedRootObject;
     private AnimationClip targetClip;
     private readonly List<GameObjectGroup> objectGroups = new();
     private void ObjectGroupsAddNew() => objectGroups.Add(new GameObjectGroup() { groupName = $"Group {objectGroups.Count + 1}" });
@@ -24,6 +25,8 @@ public class FullToggleGeneratorWindow : EditorWindow
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
     private FullToggleGeneratorI18N i18n = new(language);
+    private string GuiMessage = "";
+    private double GuiMessageExpireTime;
 
 
     [MenuItem("Tools/Elypha Toolkit/Full Toggle Generator")]
@@ -48,11 +51,12 @@ public class FullToggleGeneratorWindow : EditorWindow
         RenderObjectGroups();
 
         EditorGUILayout.Space(10);
-
         GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
         targetClip = (AnimationClip)EditorGUILayout.ObjectField(targetClip, typeof(AnimationClip), false);
 
         EditorGUILayout.Space(10);
+        GUILayout.Label("Path relative to", EditorStyles.boldLabel);
+        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
 
         UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
 
@@ -70,6 +74,17 @@ public class FullToggleGeneratorWindow : EditorWindow
             }
         }
         GUI.backgroundColor = Color.white;
+
+        if (GuiMessageExpireTime > EditorApplication.timeSinceStartup)
+        {
+            EditorGUILayout.Space(10);
+            GUILayout.Label(GuiMessage, new GUIStyle(EditorStyles.label)
+            {
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.cyan }
+            });
+            Repaint();
+        }
 
         EditorGUILayout.EndScrollView();
     }
@@ -209,7 +224,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         }
 
         EditorUtility.ClearProgressBar();
-        EditorUtility.DisplayDialog("Success", $"Done! {frame} frames written to '{targetClip.name}'.", "OK");
+        ShowGuiMessage($"Done! {frame} frames written to '{targetClip.name}'.", 3.0);
 
         EditorUtility.SetDirty(targetClip);
         AssetDatabase.SaveAssets();
@@ -224,8 +239,11 @@ public class FullToggleGeneratorWindow : EditorWindow
             {
                 if (go == null) continue;
 
-                string path = AnimationUtility.CalculateTransformPath(go.transform, null);
-                EditorCurveBinding binding = new EditorCurveBinding
+                string path = assumedRootObject != null
+                    ? AnimationUtility.CalculateTransformPath(go.transform, assumedRootObject.transform)
+                    : AnimationUtility.CalculateTransformPath(go.transform, null);
+
+                EditorCurveBinding binding = new()
                 {
                     path = path,
                     type = typeof(GameObject),
@@ -283,5 +301,11 @@ public class FullToggleGeneratorWindow : EditorWindow
             }
             GUILayout.EndHorizontal();
         }
+    }
+
+    private void ShowGuiMessage(string message, double duration = 3.0)
+    {
+        GuiMessage = message;
+        GuiMessageExpireTime = EditorApplication.timeSinceStartup + duration;
     }
 }
