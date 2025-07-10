@@ -13,7 +13,6 @@ namespace Elypha
         private Vector2 scrollPosition;
         private static PluginLanguage language = PluginLanguage.English;
         private MaterialBulkSwapperI18N i18n = new MaterialBulkSwapperI18N(language);
-        private Func<string, string> _t;
 
 
         private GUIStyle LabelStyleCentered => new(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
@@ -35,7 +34,7 @@ namespace Elypha
         private float targetFrameTime;
 
 
-        private readonly string[] actionTabs = new string[] { "Replace In-Place", "Create Animation" };
+        private readonly string[] actionTabs = new string[] { "Replace In-Place", "Replace In Animation" };
         private int actionTabIndex = 0;
         private bool showAdvancedSettings = false;
 
@@ -74,22 +73,20 @@ namespace Elypha
                 if (language != i18n.language)
                 {
                     i18n = new MaterialBulkSwapperI18N(language);
-                    _t = i18n._t;
                 }
                 GUILayout.EndHorizontal();
             }
 
-            UnityHelper.LabelBoldColored("# Settings", UnityHelper.ColourTitle1);
-            UnityHelper.Separator(Color.grey, 1, 0, 4);
+            UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
 
 
 
             // Avatar Object
-            avatarObject = (GameObject)EditorGUILayout.ObjectField("Avatar Object", avatarObject, typeof(GameObject), true, expanded);
+            avatarObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Avatar Object"), avatarObject, typeof(GameObject), true, expanded);
 
             // Outfit Object
-            outfitObject = (GameObject)EditorGUILayout.ObjectField("Outfit Object", outfitObject, typeof(GameObject), true, expanded);
+            outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, expanded);
             var _currentOutfitObject = outfitObject == null ? -1 : outfitObject.GetInstanceID();
             if (_lastOutfitObject != _currentOutfitObject)
             {
@@ -99,29 +96,27 @@ namespace Elypha
             }
 
             // Reload
-            if (GUILayout.Button("Reload"))
+            if (GUILayout.Button(i18n.Localise("Reload")))
             {
                 LoadRenderers();
                 LoadMaterials();
             }
 
 
-            GUILayout.Space(8);
-            UnityHelper.LabelBoldColored("# Edit", UnityHelper.ColourTitle1);
-            UnityHelper.Separator(Color.grey, 1, 0, 4);
+            UnityHelper.DrawTitle1(i18n.Localise("Edit"));
 
             // Renderers
             // --------------------------------
             GUILayout.BeginHorizontal();
             UnityHelper.LabelBoldColored("Skinned Mesh Renderers", UnityHelper.ColourBold);
-            if (GUILayout.Button("Select All"))
+            if (GUILayout.Button(i18n.Localise("Select All")))
             {
                 foreach (var pair in rendererConfigs)
                 {
                     pair.Value.Enabled = true;
                 }
             }
-            if (GUILayout.Button("Select None"))
+            if (GUILayout.Button(i18n.Localise("Select None")))
             {
                 foreach (var pair in rendererConfigs)
                 {
@@ -160,15 +155,15 @@ namespace Elypha
             // Materials
             // --------------------------------
             GUILayout.BeginHorizontal();
-            UnityHelper.LabelBoldColored("Unique Materials", UnityHelper.ColourBold);
-            if (GUILayout.Button("Select All"))
+            UnityHelper.LabelBoldColored(i18n.Localise("Unique Materials"), UnityHelper.ColourBold);
+            if (GUILayout.Button(i18n.Localise("Select All")))
             {
                 foreach (var pair in materialConfigs)
                 {
                     pair.Value.Enabled = true;
                 }
             }
-            if (GUILayout.Button("Select None"))
+            if (GUILayout.Button(i18n.Localise("Select None")))
             {
                 foreach (var pair in materialConfigs)
                 {
@@ -206,14 +201,12 @@ namespace Elypha
             }
 
 
-            GUILayout.Space(8);
-            UnityHelper.LabelBoldColored("# Select Action", UnityHelper.ColourTitle1);
-            UnityHelper.Separator(Color.grey, 1, 0, 4);
+            UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
 
             // Actions
             // --------------------------------
             GUILayout.BeginVertical();
-            actionTabIndex = GUILayout.Toolbar(actionTabIndex, actionTabs.Select(_t).ToArray());
+            actionTabIndex = GUILayout.Toolbar(actionTabIndex, actionTabs.Select(i18n.Localise).ToArray());
             GUILayout.EndVertical();
 
             switch (actionTabIndex)
@@ -233,14 +226,14 @@ namespace Elypha
 
         private void DrawReplaceTab()
         {
-            UnityHelper.LabelBoldColored("Replace Material", UnityHelper.ColourBold);
+            UnityHelper.LabelBoldColored(i18n.Localise("Replace Material"), UnityHelper.ColourBold);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Restore"))
+            if (GUILayout.Button(i18n.Localise("Restore")))
             {
                 ApplyInPlaceMaterialOriginal();
             }
-            if (GUILayout.Button("Replace Material"))
+            if (GUILayout.Button(i18n.Localise("Replace Material")))
             {
                 ApplyInPlaceMaterialSwapped();
             }
@@ -249,18 +242,18 @@ namespace Elypha
 
         private void DrawCreateAnimationTab()
         {
-            UnityHelper.LabelBoldColored("Select Swap Animation", UnityHelper.ColourBold);
+            UnityHelper.LabelBoldColored(i18n.Localise("Select Swap Animation"), UnityHelper.ColourBold);
 
             // Animation Clip
             GUILayout.BeginHorizontal();
-            animationClip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", animationClip, typeof(AnimationClip), false, expanded);
+            animationClip = (AnimationClip)EditorGUILayout.ObjectField(i18n.Localise("Animation Clip"), animationClip, typeof(AnimationClip), false, expanded);
             var _currentAnimationClip = animationClip == null ? -1 : animationClip.GetInstanceID();
             if (_lastAnimationClip != _currentAnimationClip)
             {
                 _lastAnimationClip = _currentAnimationClip;
                 LoadAnimationClip();
             }
-            if (GUILayout.Button("Reload"))
+            if (GUILayout.Button(i18n.Localise("Reload")))
             {
                 LoadAnimationClip();
             }
@@ -272,16 +265,16 @@ namespace Elypha
 
 
             // Next Frame
-            UnityHelper.LabelBoldColored("Add keyframe", UnityHelper.ColourBold);
+            UnityHelper.LabelBoldColored(i18n.Localise("Add keyframe"), UnityHelper.ColourBold);
 
             if (animationClip == null) GUI.enabled = false;
-            targetFrameNumber = EditorGUILayout.IntField("Target Frame", targetFrameNumber);
+            targetFrameNumber = EditorGUILayout.IntField(i18n.Localise("Target Frame"), targetFrameNumber);
             if (animationClip == null) GUI.enabled = true;
 
             if (animationClip == null)
             {
                 GUI.enabled = false;
-                GUILayout.Button($"Please select an Animation Clip");
+                GUILayout.Button("Please select an Animation Clip");
                 GUI.enabled = true;
             }
             else
