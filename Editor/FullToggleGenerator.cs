@@ -54,7 +54,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         targetClip = (AnimationClip)EditorGUILayout.ObjectField(targetClip, typeof(AnimationClip), false);
 
         EditorGUILayout.Space(10);
-        GUILayout.Label("Path relative to", EditorStyles.boldLabel);
+        GUILayout.Label("Animation path relative to", EditorStyles.boldLabel);
         assumedRootObject = (GameObject)EditorGUILayout.ObjectField(assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
 
         UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
