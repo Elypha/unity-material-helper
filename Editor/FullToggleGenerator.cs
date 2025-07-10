@@ -25,8 +25,7 @@ public class FullToggleGeneratorWindow : EditorWindow
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
     private FullToggleGeneratorI18N i18n = new(language);
-    private string GuiMessage = "";
-    private double GuiMessageExpireTime;
+    private readonly GuiMessage guiMessage = new();
 
 
     [MenuItem("Tools/Elypha Toolkit/Full Toggle Generator")]
@@ -75,16 +74,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         }
         GUI.backgroundColor = Color.white;
 
-        if (GuiMessageExpireTime > EditorApplication.timeSinceStartup)
-        {
-            EditorGUILayout.Space(10);
-            GUILayout.Label(GuiMessage, new GUIStyle(EditorStyles.label)
-            {
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.cyan }
-            });
-            Repaint();
-        }
+        guiMessage.Draw(10, Repaint);
 
         EditorGUILayout.EndScrollView();
     }
@@ -224,7 +214,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         }
 
         EditorUtility.ClearProgressBar();
-        ShowGuiMessage($"Done! {frame} frames written to '{targetClip.name}'.", 3.0);
+        guiMessage.Show($"Done! {frame} frames written to '{targetClip.name}'.", 3.0);
 
         EditorUtility.SetDirty(targetClip);
         AssetDatabase.SaveAssets();
@@ -301,11 +291,5 @@ public class FullToggleGeneratorWindow : EditorWindow
             }
             GUILayout.EndHorizontal();
         }
-    }
-
-    private void ShowGuiMessage(string message, double duration = 3.0)
-    {
-        GuiMessage = message;
-        GuiMessageExpireTime = EditorApplication.timeSinceStartup + duration;
     }
 }
