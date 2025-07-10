@@ -15,13 +15,6 @@ namespace Elypha
         private MaterialBulkSwapperI18N i18n = new MaterialBulkSwapperI18N(language);
 
 
-        private GUIStyle LabelStyleCentered => new(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
-        private readonly GUILayoutOption[] expanded = new GUILayoutOption[] {
-            GUILayout.ExpandWidth(true),
-            GUILayout.MinWidth(300),
-        };
-
-
         private GameObject avatarObject;
         private GameObject outfitObject;
         private int _lastOutfitObject = -1;
@@ -83,10 +76,10 @@ namespace Elypha
 
 
             // Avatar Object
-            avatarObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Avatar Object"), avatarObject, typeof(GameObject), true, expanded);
+            avatarObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Avatar Object"), avatarObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
 
             // Outfit Object
-            outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, expanded);
+            outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
             var _currentOutfitObject = outfitObject == null ? -1 : outfitObject.GetInstanceID();
             if (_lastOutfitObject != _currentOutfitObject)
             {
@@ -182,7 +175,7 @@ namespace Elypha
                     GUILayout.BeginHorizontal();
                     materialConfigs[mat].Enabled = EditorGUILayout.Toggle(materialConfigs[mat].Enabled, GUILayout.Width(16));
                     EditorGUILayout.ObjectField(mat, typeof(Material), false);
-                    EditorGUILayout.LabelField("->", LabelStyleCentered, GUILayout.Width(16));
+                    EditorGUILayout.LabelField("->", UnityHelper.LabelStyleCentred, GUILayout.Width(16));
                     materialConfigs[mat].TargetMaterial = (Material)EditorGUILayout.ObjectField(materialConfigs[mat].TargetMaterial, typeof(Material), false);
                     GUILayout.EndHorizontal();
                     if (pair.Value.Excluded) GUI.enabled = true;
@@ -194,7 +187,7 @@ namespace Elypha
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.Toggle(false, GUILayout.Width(16));
                 EditorGUILayout.ObjectField(null, typeof(Material), false);
-                EditorGUILayout.LabelField("->", LabelStyleCentered, GUILayout.Width(25));
+                EditorGUILayout.LabelField("->", UnityHelper.LabelStyleCentred, GUILayout.Width(25));
                 EditorGUILayout.ObjectField(null, typeof(Material), false);
                 GUILayout.EndHorizontal();
                 GUI.enabled = true;
@@ -246,7 +239,7 @@ namespace Elypha
 
             // Animation Clip
             GUILayout.BeginHorizontal();
-            animationClip = (AnimationClip)EditorGUILayout.ObjectField(i18n.Localise("Animation Clip"), animationClip, typeof(AnimationClip), false, expanded);
+            animationClip = (AnimationClip)EditorGUILayout.ObjectField(i18n.Localise("Animation Clip"), animationClip, typeof(AnimationClip), false, UnityHelper.LayoutExpanded);
             var _currentAnimationClip = animationClip == null ? -1 : animationClip.GetInstanceID();
             if (_lastAnimationClip != _currentAnimationClip)
             {
