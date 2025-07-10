@@ -9,12 +9,12 @@ on:
 env:
   packageName: "com.elypha.vpm.material-helper"
   pagesRepo: "Elypha/vpm-packages"
-  # runtime variables
-  packageVersion: "0.0.0"
 
 jobs:
   build-assets:
     runs-on: ubuntu-latest
+    outputs:
+      packageVersion: ${{ steps.info.outputs.packageVersion }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,6 +25,7 @@ jobs:
         id: info
         run: |
           packageVersion=$(jq -r '.version' package.json)
+          echo "packageVersion=${packageVersion}" >> $GITHUB_OUTPUT
           echo "zipName=${{ env.packageName }}-${packageVersion}.zip" >> $GITHUB_OUTPUT
           echo "unitypackageName=${{ env.packageName }}-${packageVersion}.unitypackage" >> $GITHUB_OUTPUT
 
@@ -61,4 +62,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.PAT_PAGES_REBUILD }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${{ env.pagesRepo }}/dispatches" \
-            -d '{"event_type":"pages-rebuild", "client_payload": {"release_version": "${{ github.ref_name }}", "package_version": "${{ env.packageVersion }}"}}'
+            -d '{"event_type":"pages-rebuild", "client_payload": {"release_version": "${{ github.ref_name }}", "package_version": "${{ needs.build-assets.outputs.packageVersion }}"}}'
