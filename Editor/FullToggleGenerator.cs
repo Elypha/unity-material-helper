@@ -6,12 +6,6 @@ using Elypha.Helper;
 using Elypha.I18N;
 using System;
 
-[System.Serializable]
-public class GameObjectGroup
-{
-    public List<GameObject> gameObjects = new() { null };
-    public string groupName = "Group";
-}
 
 public class FullToggleGeneratorWindow : EditorWindow
 {
@@ -292,4 +286,11 @@ public class FullToggleGeneratorWindow : EditorWindow
             GUILayout.EndHorizontal();
         }
     }
+}
+
+[System.Serializable]
+public class GameObjectGroup
+{
+    public List<GameObject> gameObjects = new() { null };
+    public string groupName = "Group";
 }
