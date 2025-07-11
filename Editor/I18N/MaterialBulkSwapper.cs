@@ -33,9 +33,9 @@ namespace Elypha.I18N
                 { PluginLanguage.ChineseSimplified, "设置" },
                 { PluginLanguage.Japanese, "設定" },
             }},
-            { "Avatar Object", new() {
-                { PluginLanguage.ChineseSimplified, "角色对象" },
-                { PluginLanguage.Japanese, "アバターオブジェクト" },
+            { "Root Object", new() {
+                { PluginLanguage.ChineseSimplified, "根对象" },
+                { PluginLanguage.Japanese, "ルートオブジェクト" },
             }},
             { "Outfit Object", new() {
                 { PluginLanguage.ChineseSimplified, "衣服对象" },
