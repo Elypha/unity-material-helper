@@ -72,13 +72,9 @@ public class MaterialBulkSwapper : EditorWindow
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
 
-
-
-        // Avatar Object
-        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Root Object"), assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
-
         // Outfit Object
         outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
+        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Path relative to"), assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
         var _currentOutfitObject = outfitObject == null ? -1 : outfitObject.GetInstanceID();
         if (_lastOutfitObject != _currentOutfitObject)
         {
@@ -234,7 +230,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void DrawCreateAnimationTab()
     {
-        UnityHelper.LabelBoldColored(i18n.Localise("Select Swap Animation"), UnityHelper.ColourBold);
+        UnityHelper.LabelBoldColored(i18n.Localise("Select Animation Clip for swap"), UnityHelper.ColourBold);
 
         // Animation Clip
         GUILayout.BeginHorizontal();

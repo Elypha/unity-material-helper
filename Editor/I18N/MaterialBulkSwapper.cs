@@ -33,9 +33,9 @@ namespace Elypha.I18N
                 { PluginLanguage.ChineseSimplified, "设置" },
                 { PluginLanguage.Japanese, "設定" },
             }},
-            { "Root Object", new() {
-                { PluginLanguage.ChineseSimplified, "根对象" },
-                { PluginLanguage.Japanese, "ルートオブジェクト" },
+            { "Path relative to", new() {
+                { PluginLanguage.ChineseSimplified, "路径相对于" },
+                { PluginLanguage.Japanese, "パス相対" },
             }},
             { "Outfit Object", new() {
                 { PluginLanguage.ChineseSimplified, "衣服对象" },
@@ -73,7 +73,7 @@ namespace Elypha.I18N
                 { PluginLanguage.ChineseSimplified, "在动画中替换" },
                 { PluginLanguage.Japanese, "アニメーションで置き換え" },
             }},
-            { "Select Swap Animation", new() {
+            { "Select Animation Clip for swap", new() {
                 { PluginLanguage.ChineseSimplified, "选择替换动画" },
                 { PluginLanguage.Japanese, "置き換えアニメーションを選択" },
             }},
