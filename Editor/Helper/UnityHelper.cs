@@ -120,3 +120,30 @@ namespace Elypha.Helper
 
     }
 }
+
+public static class TransformExtensions
+{
+    public static string GetPath(this Transform current)
+    {
+        if (current == null) return "";
+        var path = current.name;
+        while (current.parent != null)
+        {
+            current = current.parent;
+            path = current.name + "/" + path;
+        }
+        return path;
+    }
+
+    public static string GetRelativePath(this Transform current, Transform relativeTo)
+    {
+        if (current == null || relativeTo == null) return "";
+        var path = current.name;
+        while (current.parent != null && current.parent != relativeTo)
+        {
+            current = current.parent;
+            path = current.name + "/" + path;
+        }
+        return path;
+    }
+}
