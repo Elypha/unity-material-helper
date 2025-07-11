@@ -244,10 +244,17 @@ public class FullToggleGeneratorWindow : EditorWindow
                 float value = states[i] ? 1f : 0f;
 
                 int keyIndex = curve.AddKey(time, value);
+            }
+        }
 
-                // Set the tangent modes to constant to ensure the state remains constant
-                AnimationUtility.SetKeyLeftTangentMode(curve, keyIndex, AnimationUtility.TangentMode.Constant);
-                AnimationUtility.SetKeyRightTangentMode(curve, keyIndex, AnimationUtility.TangentMode.Constant);
+        // Set the tangent modes to constant to ensure the state remains constant
+        // IMPORTANT: This needs to be done *after* all keys are added
+        foreach (AnimationCurve curve in curves.Values)
+        {
+            for (int i = 0; i < curve.length; i++)
+            {
+                AnimationUtility.SetKeyLeftTangentMode(curve, i, AnimationUtility.TangentMode.Constant);
+                AnimationUtility.SetKeyRightTangentMode(curve, i, AnimationUtility.TangentMode.Constant);
             }
         }
     }
