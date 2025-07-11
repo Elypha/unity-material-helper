@@ -161,14 +161,12 @@ public class FullToggleGeneratorWindow : EditorWindow
         // a list to hold all possible states
         List<List<bool>> allStates = new()
         {
-            // frame 0: all groups disabled
-            Enumerable.Repeat(false, validGroups.Count).ToList(),
-            // frame 1: all groups enabled
+            // frame 0: all groups enabled
             Enumerable.Repeat(true, validGroups.Count).ToList()
         };
 
-        // frame 2~: generate combinations of groups to disable
-        for (int numToDisable = 1; numToDisable <= validGroups.Count - 1; numToDisable++)
+        // frame 1~: generate combinations of groups to disable
+        for (int numToDisable = 1; numToDisable <= validGroups.Count; numToDisable++)
         {
             var combinations = GetCombinations(Enumerable.Range(0, validGroups.Count).ToList(), numToDisable);
 
@@ -182,6 +180,9 @@ public class FullToggleGeneratorWindow : EditorWindow
                 allStates.Add(currentStates);
             }
         }
+
+        // frame -1: all groups disabled
+        // Enumerable.Repeat(false, validGroups.Count).ToList().ForEach(state => allStates.Add(state));
 
         // Save in a dictionary to avoid multiple calls to AnimationUtility.SetEditorCurve
         Dictionary<EditorCurveBinding, AnimationCurve> curves = new();
