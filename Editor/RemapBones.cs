@@ -71,24 +71,21 @@ public class RemapBones : EditorWindow
     {
         var sb = new StringBuilder();
 
-        if (renderer.bones.Length != referenceRenderer.bones.Length)
-        {
-            sb.AppendLine($"ERROR: The number of bones in the renderer ({renderer.bones.Length}) does not match the reference renderer ({referenceRenderer.bones.Length}).");
-            return sb.ToString();
-        }
-
         // check bone matches
         // --------------------------------
         var countOk = 0;
         var countMismatch = 0;
         var countMissing = 0;
-        for (int i = 0; i < renderer.bones.Length; i++)
+        var largerLength = Math.Max(renderer.bones.Length, referenceRenderer.bones.Length);
+        for (int i = 0; i < largerLength; i++)
         {
             sb.Append($"{i,4}  ");
-            var bone = renderer.bones[i];
+            // var bone = renderer.bones[i];
+            var bone = TryGetElement(renderer.bones, i);
             var boneName = bone ? bone.name : "null";
             sb.Append($"{boneName,24}  ");
-            var refBone = referenceRenderer.bones[i];
+            // var refBone = referenceRenderer.bones[i];
+            var refBone = TryGetElement(referenceRenderer.bones, i);
             var refBoneName = refBone ? refBone.name : "null";
             sb.Append($"{refBoneName,24}  ");
 
@@ -112,6 +109,13 @@ public class RemapBones : EditorWindow
             }
             sb.Append("\n");
         }
+
+        if (renderer.bones.Length != referenceRenderer.bones.Length)
+        {
+            sb.AppendLine($"ERROR: The number of bones in the renderer ({renderer.bones.Length}) does not match the reference renderer ({referenceRenderer.bones.Length}).");
+            return sb.ToString();
+        }
+
         sb.AppendLine($"\nSummary:");
         sb.AppendLine($"Total    : {renderer.bones.Length}");
         sb.AppendLine($"OK       : {countOk}");
@@ -153,5 +157,12 @@ public class RemapBones : EditorWindow
         sb.AppendLine($"  - bones missing: {renderer.bones.Count(b => b == null)}");
 
         return sb.ToString();
+    }
+
+    public static T? TryGetElement<T>(T[] array, int index) where T : class
+    {
+        if (index >= 0 && index < array.Length)
+            return array[index];
+        return null;
     }
 }
