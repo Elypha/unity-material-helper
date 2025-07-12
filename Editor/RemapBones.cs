@@ -80,11 +80,9 @@ public class RemapBones : EditorWindow
         for (int i = 0; i < largerLength; i++)
         {
             sb.Append($"{i,4}  ");
-            // var bone = renderer.bones[i];
             var bone = TryGetElement(renderer.bones, i);
             var boneName = bone ? bone.name : "null";
             sb.Append($"{boneName,24}  ");
-            // var refBone = referenceRenderer.bones[i];
             var refBone = TryGetElement(referenceRenderer.bones, i);
             var refBoneName = refBone ? refBone.name : "null";
             sb.Append($"{refBoneName,24}  ");
