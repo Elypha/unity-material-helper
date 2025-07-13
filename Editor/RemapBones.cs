@@ -20,7 +20,7 @@ public class RemapBones : EditorWindow
     private SkinnedMeshRenderer renderer;
     private Transform newRootBone;
     private SkinnedMeshRenderer referenceRenderer;
-    private Dictionary<string, Transform> boneDictionary = new();
+    private readonly Dictionary<string, Transform> boneDictionary = new();
     private string result;
     private GUIStyle monoStyle;
 

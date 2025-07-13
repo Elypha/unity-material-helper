@@ -13,13 +13,13 @@ public class FindReferencingMaterials : EditorWindow
     private Vector2 _textureListScrollPosition;
 
     private List<Texture> _inputTextures = new();
-    private Dictionary<string, List<Material>> _groupedResults = new();
+    private readonly Dictionary<string, List<Material>> _groupedResults = new();
 
     private const float TextureAreaHeight = 125f;
 
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
-    private TemplateI18N i18n = new(language);
+    private readonly TemplateI18N i18n = new(language);
     private readonly GuiMessage guiMessage = new();
 
     [MenuItem("Tools/Elypha Toolkit/Find Referencing Materials")]
