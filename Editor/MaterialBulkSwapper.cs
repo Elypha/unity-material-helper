@@ -16,6 +16,8 @@ public class MaterialBulkSwapper : EditorWindow
 
     private GameObject assumedRootObject;
     private GameObject outfitObject;
+    private bool isOverrideOutfitObjectName = false;
+    private string overrideOutfitObjectName = "";
     private int _lastOutfitObject = -1;
     private AnimationClip animationClip;
     private int _lastAnimationClip = -1;
@@ -75,6 +77,11 @@ public class MaterialBulkSwapper : EditorWindow
         // Outfit Object
         outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
         assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Path relative to"), assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
+        isOverrideOutfitObjectName = EditorGUILayout.Toggle(i18n.Localise("Override Outfit Object Name"), isOverrideOutfitObjectName);
+        if (isOverrideOutfitObjectName)
+        {
+            overrideOutfitObjectName = EditorGUILayout.TextField(i18n.Localise("Outfit Object Name"), overrideOutfitObjectName);
+        }
         var _currentOutfitObject = outfitObject == null ? -1 : outfitObject.GetInstanceID();
         if (_lastOutfitObject != _currentOutfitObject)
         {
@@ -353,6 +360,11 @@ public class MaterialBulkSwapper : EditorWindow
         foreach (SkinnedMeshRenderer renderer in renderers)
         {
             var path = UnityHelper.GetRelativePathInHierarchy(assumedRootObject.transform, renderer.transform);
+
+            if (isOverrideOutfitObjectName && !string.IsNullOrEmpty(overrideOutfitObjectName))
+            {
+                path = Utils.ReplaceLastOccurrence(path, outfitObject.name, overrideOutfitObjectName);
+            }
 
             for (int i = 0; i < renderer.sharedMaterials.Length; i++)
             {
