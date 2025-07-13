@@ -33,7 +33,7 @@ public class FindReferencingMaterials : EditorWindow
 
     void OnGUI()
     {
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, ref i18n);
+        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
