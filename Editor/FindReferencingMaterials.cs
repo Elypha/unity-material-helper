@@ -13,13 +13,13 @@ public class FindReferencingMaterials : EditorWindow
     private Vector2 _textureListScrollPosition;
 
     private List<Texture> _inputTextures = new();
-    private Dictionary<string, List<Material>> _groupedResults = new();
+    private readonly Dictionary<string, List<Material>> _groupedResults = new();
 
     private const float TextureAreaHeight = 125f;
 
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
-    private TemplateI18N i18n = new(language);
+    private readonly TemplateI18N i18n = new(language);
     private readonly GuiMessage guiMessage = new();
 
     [MenuItem("Tools/Elypha Toolkit/Find Referencing Materials")]
@@ -33,7 +33,7 @@ public class FindReferencingMaterials : EditorWindow
 
     void OnGUI()
     {
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, ref i18n);
+        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
@@ -112,6 +112,12 @@ public class FindReferencingMaterials : EditorWindow
                 DragAndDrop.AcceptDrag();
 
                 var draggedTextures = DragAndDrop.objectReferences.OfType<Texture>();
+
+                // clear existing textures if not holding Shift
+                if (!currentEvent.shift)
+                {
+                    _inputTextures.Clear();
+                }
 
                 // Add new textures without creating duplicates
                 var currentTextureSet = new HashSet<Texture>(_inputTextures);

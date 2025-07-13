@@ -25,10 +25,10 @@ public class PhysBonesExtractor : EditorWindow
     private GameObject PhysBoneCollidersParent;
     private VRCPhysBone[] physBones;
     private VRCPhysBoneCollider[] physBoneColliders;
-    private Dictionary<VRCPhysBoneCollider, VRCPhysBoneCollider> pbcMap = new();
-    private List<string> leftOnly;
-    private List<string> rightOnly;
-    private List<string> armatureStatus;
+    private readonly Dictionary<VRCPhysBoneCollider, VRCPhysBoneCollider> pbcMap = new();
+    private readonly List<string> leftOnly;
+    private readonly List<string> rightOnly;
+    private readonly List<string> armatureStatus;
 
     private void OnGUI()
     {
