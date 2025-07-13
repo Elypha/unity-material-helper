@@ -10,9 +10,11 @@ using Elypha.I18N;
 public class MaterialBulkSwapper : EditorWindow
 {
     private Vector2 scrollPosition;
-    private static PluginLanguage language = PluginLanguage.English;
-    private MaterialBulkSwapperI18N i18n = new MaterialBulkSwapperI18N(language);
 
+    private bool showAdvancedSettings = false;
+    private static PluginLanguage language = PluginLanguage.English;
+    private readonly MaterialBulkSwapperI18N i18n = new(language);
+    private readonly GuiMessage guiMessage = new();
 
     private GameObject assumedRootObject;
     private GameObject outfitObject;
@@ -30,7 +32,6 @@ public class MaterialBulkSwapper : EditorWindow
 
     private readonly string[] actionTabs = new string[] { "Replace In-Place", "Replace In Animation" };
     private int actionTabIndex = 0;
-    private bool showAdvancedSettings = false;
 
 
     [MenuItem("Tools/Elypha Toolkit/Material Bulk Swapper")]
@@ -38,8 +39,6 @@ public class MaterialBulkSwapper : EditorWindow
     {
         var window = GetWindow<MaterialBulkSwapper>("Material Bulk Swapper");
         window.minSize = new Vector2(400, 400);
-
-        window.i18n = new MaterialBulkSwapperI18N(language);
     }
 
 
@@ -49,27 +48,7 @@ public class MaterialBulkSwapper : EditorWindow
 
         // Settings
         // --------------------------------
-        showAdvancedSettings = EditorGUILayout.Foldout(
-            showAdvancedSettings,
-            "Advanced Settings",
-            true,
-            new GUIStyle(EditorStyles.foldout)
-            {
-                fontStyle = FontStyle.Bold
-            }
-        );
-
-        if (showAdvancedSettings)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Language", GUILayout.Width(100));
-            language = (PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
-            if (language != i18n.language)
-            {
-                i18n = new MaterialBulkSwapperI18N(language);
-            }
-            GUILayout.EndHorizontal();
-        }
+        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 

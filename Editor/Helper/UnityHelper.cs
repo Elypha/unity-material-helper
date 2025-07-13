@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
 using System.Collections.Generic;
-using System;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 
@@ -119,7 +117,7 @@ namespace Elypha.Helper
         }
 
 
-        public static void DrawAdvancedSettings(ref bool showAdvancedSettings, ref I18N.PluginLanguage language, ref I18N.TemplateI18N i18n)
+        public static void DrawAdvancedSettings(ref bool showAdvancedSettings, ref I18N.PluginLanguage language, I18N.TemplateI18N i18n)
         {
             showAdvancedSettings = EditorGUILayout.Foldout(
                 showAdvancedSettings,
@@ -138,7 +136,7 @@ namespace Elypha.Helper
                 language = (I18N.PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
                 if (language != i18n.language)
                 {
-                    i18n = new I18N.TemplateI18N(language);
+                    i18n.SetLanguage(language);
                 }
                 GUILayout.EndHorizontal();
             }

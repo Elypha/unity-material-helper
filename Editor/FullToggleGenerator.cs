@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Elypha.Helper;
 using Elypha.I18N;
-using System;
 
 
 public class FullToggleGeneratorWindow : EditorWindow
@@ -18,7 +17,7 @@ public class FullToggleGeneratorWindow : EditorWindow
 
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
-    private FullToggleGeneratorI18N i18n = new(language);
+    private readonly FullToggleGeneratorI18N i18n = new(language);
     private readonly GuiMessage guiMessage = new();
 
 
@@ -36,7 +35,7 @@ public class FullToggleGeneratorWindow : EditorWindow
 
     private void OnGUI()
     {
-        DrawAdvancedSettings();
+        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
@@ -171,7 +170,7 @@ public class FullToggleGeneratorWindow : EditorWindow
         };
 
         // frame 2~: generate combinations of groups to disable (exclude the last one, which is all groups disabled)
-        for (int numToDisable = 1; numToDisable <= validGroups.Count -1; numToDisable++)
+        for (int numToDisable = 1; numToDisable <= validGroups.Count - 1; numToDisable++)
         {
             var combinations = GetCombinations(Enumerable.Range(0, validGroups.Count).ToList(), numToDisable);
 
@@ -270,32 +269,6 @@ public class FullToggleGeneratorWindow : EditorWindow
             GetCombinations(list.Skip(i + 1), k - 1).Select(c => (new[] { e }).Concat(c)));
     }
 
-
-
-    private void DrawAdvancedSettings()
-    {
-        showAdvancedSettings = EditorGUILayout.Foldout(
-            showAdvancedSettings,
-            "Advanced Settings",
-            true,
-            new GUIStyle(EditorStyles.foldout)
-            {
-                fontStyle = FontStyle.Bold
-            }
-        );
-
-        if (showAdvancedSettings)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Language", GUILayout.Width(100));
-            language = (PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
-            if (language != i18n.language)
-            {
-                i18n = new FullToggleGeneratorI18N(language);
-            }
-            GUILayout.EndHorizontal();
-        }
-    }
 }
 
 [System.Serializable]
