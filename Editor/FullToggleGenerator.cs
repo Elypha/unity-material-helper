@@ -36,22 +36,30 @@ public class FullToggleGeneratorWindow : EditorWindow
 
     private void OnGUI()
     {
-        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-
         DrawAdvancedSettings();
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
-        RenderObjectGroups();
 
-        EditorGUILayout.Space(10);
         GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
-        targetClip = (AnimationClip)EditorGUILayout.ObjectField(targetClip, typeof(AnimationClip), false);
 
-        EditorGUILayout.Space(10);
-        GUILayout.Label("Path relative to", EditorStyles.boldLabel);
-        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
+        targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
+        assumedRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
 
-        UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
+        EditorGUILayout.Space(8);
+
+        DrawObjectGroupsHeader();
+
+        EditorGUILayout.Space(2);
+
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+        DrawObjectGroups();
+
+        EditorGUILayout.EndScrollView();
+
+        UnityHelper.Separator(Color.grey, 1, 0, 4);
+
+        guiMessage.Draw(10, Repaint);
 
         GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
         if (GUILayout.Button(i18n.Localise("Generate Full Toggle Animation"), GUILayout.Height(40)))
@@ -67,17 +75,10 @@ public class FullToggleGeneratorWindow : EditorWindow
             }
         }
         GUI.backgroundColor = Color.white;
-
-        guiMessage.Draw(10, Repaint);
-
-        EditorGUILayout.EndScrollView();
     }
 
 
-
-
-
-    private void RenderObjectGroups()
+    private void DrawObjectGroupsHeader()
     {
         GUILayout.BeginHorizontal();
         GUILayout.Label("Object Groups", EditorStyles.boldLabel);
@@ -89,9 +90,11 @@ public class FullToggleGeneratorWindow : EditorWindow
         }
         GUI.backgroundColor = Color.white;
         GUILayout.EndHorizontal();
+    }
 
-        EditorGUILayout.Space(4);
 
+    private void DrawObjectGroups()
+    {
         for (int i = 0; i < objectGroups.Count; i++)
         {
             var group = objectGroups[i];
