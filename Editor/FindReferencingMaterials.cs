@@ -113,6 +113,12 @@ public class FindReferencingMaterials : EditorWindow
 
                 var draggedTextures = DragAndDrop.objectReferences.OfType<Texture>();
 
+                // clear existing textures if not holding Shift
+                if (!currentEvent.shift)
+                {
+                    _inputTextures.Clear();
+                }
+
                 // Add new textures without creating duplicates
                 var currentTextureSet = new HashSet<Texture>(_inputTextures);
                 currentTextureSet.UnionWith(draggedTextures);
