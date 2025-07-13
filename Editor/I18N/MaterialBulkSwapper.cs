@@ -1,38 +1,16 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.VersionControl;
-using UnityEngine;
 
 namespace Elypha.I18N
 {
-    public class MaterialBulkSwapperI18N
+    public class MaterialBulkSwapperI18N : TemplateI18N
     {
-        public PluginLanguage language;
-
-
-        public MaterialBulkSwapperI18N(PluginLanguage language)
+        public MaterialBulkSwapperI18N(PluginLanguage language) : base(language)
         {
-            this.language = language;
+            MergeCustomLocalisation(customLocalisation);
         }
 
-        public string Localise(string key)
+        private readonly Dictionary<string, Dictionary<PluginLanguage, string>> customLocalisation = new()
         {
-            if (language == PluginLanguage.English) return key;
-
-            Localisation.TryGetValue(key, out var data);
-            if (data is null) return key;
-
-            data.TryGetValue(language, out var text);
-            return text ?? key;
-        }
-
-        private static readonly Dictionary<string, Dictionary<PluginLanguage, string>> Localisation = new()
-        {
-            { "Settings", new() {
-                { PluginLanguage.ChineseSimplified, "设置" },
-                { PluginLanguage.Japanese, "設定" },
-            }},
             { "Path relative to", new() {
                 { PluginLanguage.ChineseSimplified, "路径相对于" },
                 { PluginLanguage.Japanese, "パス相対" },

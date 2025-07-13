@@ -6,33 +6,15 @@ using UnityEngine;
 
 namespace Elypha.I18N
 {
-    public class FullToggleGeneratorI18N
+    public class FullToggleGeneratorI18N : TemplateI18N
     {
-        public PluginLanguage language;
-
-
-        public FullToggleGeneratorI18N(PluginLanguage language)
+        public FullToggleGeneratorI18N(PluginLanguage language) : base(language)
         {
-            this.language = language;
+            MergeCustomLocalisation(customLocalisation);
         }
 
-        public string Localise(string key)
+        private readonly Dictionary<string, Dictionary<PluginLanguage, string>> customLocalisation = new()
         {
-            if (language == PluginLanguage.English) return key;
-
-            Localisation.TryGetValue(key, out var data);
-            if (data is null) return key;
-
-            data.TryGetValue(language, out var text);
-            return text ?? key;
-        }
-
-        private static readonly Dictionary<string, Dictionary<PluginLanguage, string>> Localisation = new()
-        {
-            { "Settings", new() {
-                { PluginLanguage.ChineseSimplified, "设置" },
-                { PluginLanguage.Japanese, "設定" },
-            }},
             { "Object Groups", new() {
                 { PluginLanguage.ChineseSimplified, "对象组" },
                 { PluginLanguage.Japanese, "オブジェクトグループ" },

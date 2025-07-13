@@ -16,7 +16,7 @@ public class SoftDisableEditor : EditorWindow
 
     private bool showAdvancedSettings = false;
     private static PluginLanguage language = PluginLanguage.English;
-    private TemplateI18N i18n = new(language);
+    private readonly TemplateI18N i18n = new(language);
     private readonly GuiMessage guiMessage = new();
 
 
@@ -30,7 +30,7 @@ public class SoftDisableEditor : EditorWindow
     private void OnGUI()
     {
 
-        DrawAdvancedSettings();
+        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
         UnityHelper.DrawTitle1(i18n.Localise("Settings"));
 
@@ -124,7 +124,7 @@ public class SoftDisableEditor : EditorWindow
         EditorUtility.SetDirty(targetClip);
 
         // string successMessage = $"成功为 {} 个对象在动画剪辑 '{}' 中生成了禁用关键帧。";
-        string successMessage =$"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
+        string successMessage = $"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
         guiMessage.Show(successMessage, 3);
         Debug.Log(successMessage);
     }
@@ -134,28 +134,4 @@ public class SoftDisableEditor : EditorWindow
         return targetClip != null && objectsToDisable.Any(obj => obj != null);
     }
 
-    private void DrawAdvancedSettings()
-    {
-        showAdvancedSettings = EditorGUILayout.Foldout(
-            showAdvancedSettings,
-            "Advanced Settings",
-            true,
-            new GUIStyle(EditorStyles.foldout)
-            {
-                fontStyle = FontStyle.Bold
-            }
-        );
-
-        if (showAdvancedSettings)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Language", GUILayout.Width(100));
-            language = (PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
-            if (language != i18n.language)
-            {
-                i18n = new TemplateI18N(language);
-            }
-            GUILayout.EndHorizontal();
-        }
-    }
 }

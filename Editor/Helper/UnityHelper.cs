@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
 using System.Collections.Generic;
-using System;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 
@@ -118,6 +116,32 @@ namespace Elypha.Helper
             Separator(Color.grey, 1, 0, 4);
         }
 
+
+        public static void DrawAdvancedSettings(ref bool showAdvancedSettings, ref I18N.PluginLanguage language, I18N.TemplateI18N i18n)
+        {
+            showAdvancedSettings = EditorGUILayout.Foldout(
+                showAdvancedSettings,
+                "Advanced Settings",
+                true,
+                new GUIStyle(EditorStyles.foldout)
+                {
+                    fontStyle = FontStyle.Bold
+                }
+            );
+
+            if (showAdvancedSettings)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Language", GUILayout.Width(100));
+                language = (I18N.PluginLanguage)EditorGUILayout.EnumPopup(language, GUILayout.Width(200));
+                if (language != i18n.language)
+                {
+                    i18n.SetLanguage(language);
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+
     }
 
     public static class Utils
@@ -132,6 +156,7 @@ namespace Elypha.Helper
             return result;
         }
     }
+
 }
 
 public static class TransformExtensions
