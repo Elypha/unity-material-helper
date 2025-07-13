@@ -124,7 +124,7 @@ public class SoftDisableEditor : EditorWindow
         EditorUtility.SetDirty(targetClip);
 
         // string successMessage = $"成功为 {} 个对象在动画剪辑 '{}' 中生成了禁用关键帧。";
-        string successMessage =$"Done! Wrote disable keyframes for {validObjects.Count} objects in '{targetClip.name}'.";
+        string successMessage =$"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
         guiMessage.Show(successMessage, 3);
         Debug.Log(successMessage);
     }
