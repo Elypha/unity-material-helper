@@ -4,7 +4,7 @@ using UnityEditor;
 using System.Linq;
 using Elypha.Common;
 using VRC.SDK3.Dynamics.PhysBone.Components;
-using VRC.Dynamics; // Required for VRCPhysBoneColliderBase
+using VRC.Dynamics;
 
 public class PhysBonesExtractor : EditorWindow
 {
@@ -28,6 +28,8 @@ public class PhysBonesExtractor : EditorWindow
 
     private readonly List<string> nullColliderStatus = new();
     private readonly List<string> extraComponentStatus = new();
+
+    private readonly GuiMessage guiMessage = new();
 
     private Vector2 scrollPosition;
 
@@ -124,6 +126,9 @@ public class PhysBonesExtractor : EditorWindow
         EditorGUI.indentLevel--;
 
         EditorGUILayout.EndScrollView();
+
+        guiMessage.Draw(10, Repaint);
+
     }
 
     private void UpdatePhysBonesFromReference()
@@ -187,14 +192,15 @@ public class PhysBonesExtractor : EditorWindow
 
     private void ExtractPhysBones()
     {
+        var errors = new List<string>();
+        var results = new List<string>();
+
         pbcMap.Clear();
         Undo.SetCurrentGroupName("Extract PhysBones");
         int group = Undo.GetCurrentGroup();
 
         foreach (var pbc in physBoneColliders)
         {
-            // var _pbc = Instantiate(pbc, PhysBoneCollidersParentObject.transform);
-            // Undo.RegisterCreatedObjectUndo(_pbc.gameObject, $"Instantiate {pbc.name}");
             var go = new GameObject(pbc.name);
             Undo.RegisterCreatedObjectUndo(go, $"Create PhysBoneCollider {pbc.name}");
             go.transform.SetParent(PhysBoneCollidersParentObject.transform, false);
@@ -215,7 +221,7 @@ public class PhysBonesExtractor : EditorWindow
 
                 if (!Services.IsPhysBoneColliderTransformValueDefault(pbc))
                 {
-                    Debug.LogError($"PhysBoneCollider: {pbc.name} has already set position and rotation values. You need to manually setup.");
+                    errors.Add($"PhysBoneCollider '{pbc.name}' has already set position and rotation offsets. You need to manually setup.");
                     continue;
                 }
 
@@ -230,7 +236,7 @@ public class PhysBonesExtractor : EditorWindow
                 // If pbc does not have a transform set to default values, we need to warn the user
                 else
                 {
-                    Debug.LogWarning($"PhysBoneCollider: {pbc.name} has a transform not set to default values. The script will still run, but you need to double-check the results.");
+                    errors.Add($"PhysBoneCollider '{pbc.name}' has a transform not set to default values. It is created, but you need to double-check the results.");
                     // Technically, we can pick up the values and set it to the bone collider component's position and rotation.
                     _position = pbc.transform.localPosition;  // although this should not work since we set rootTransform
                     _rotation = pbc.transform.localRotation;  // although this should not work since we set rootTransform
@@ -248,7 +254,7 @@ public class PhysBonesExtractor : EditorWindow
                 _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, referenceArmature.transform, targetArmature.transform);
 
                 // Technically, we can just copy the values but since I haven't seen one, please also double-check the results.
-                Debug.LogWarning($"PhysBoneCollider: {pbc.name} has a rootTransform set. The script will still run, but you need to double-check the results.");
+                errors.Add($"PhysBoneCollider '{pbc.name}' has a rootTransform set to '{pbcRoot.name}'. It is created, but you need to double-check the results.");
                 _position = pbc.transform.localPosition;
                 _rotation = pbc.transform.localRotation;
                 _scale = pbc.transform.localScale;
@@ -267,6 +273,8 @@ public class PhysBonesExtractor : EditorWindow
             _pbc.position = _colliderPosition;
             _pbc.rotation = _colliderRotation;
 
+            results.Add($"PhysBoneCollider: '{pbc.transform.GetRelativePath(referenceArmature.transform)}' => '{_pbc.name}'");
+
             pbcMap[pbc] = _pbc;
         }
 
@@ -282,39 +290,42 @@ public class PhysBonesExtractor : EditorWindow
             var relative_path = pb_root.GetRelativePath(referenceArmature.transform);
             var _pb_root = targetArmature.transform.Find(relative_path);
 
-            if (_pb_root == null)
-            {
-                Debug.LogError($"PhysBone: No matching bone for '{relative_path}' on target armature. Skipping {pb.name}.");
-                DestroyImmediate(go);
-                continue;
-            }
-
             Undo.RecordObject(_pb, "Set PhysBone Root");
             _pb.rootTransform = _pb_root;
 
+            results.Add($"PhysBone: '{pb.transform.GetRelativePath(referenceArmature.transform)}' => '{_pb.name}'");
+
             if (_pb.colliders.Count > 0)
             {
-                // **FIX for CS0029**: The list must be of the base type VRCPhysBoneColliderBase.
                 var newColliderList = new List<VRCPhysBoneColliderBase>();
 
-                // Iterate through the original pb.colliders to find the mapping.
                 foreach (var oldCollider in pb.colliders)
                 {
-                    // **FIX for CS1503**: Safely cast the base type to the derived type (VRCPhysBoneCollider)
-                    // that the dictionary uses as its key.
                     if (oldCollider is VRCPhysBoneCollider typedOldCollider && pbcMap.TryGetValue(typedOldCollider, out var newCollider))
                     {
+                        results.Add($"- with collider: '{oldCollider.transform.GetRelativePath(referenceArmature.transform)}' mapped to '{newCollider.name}'");
                         newColliderList.Add(newCollider);
                     }
                     else if (oldCollider != null)
                     {
-                        Debug.LogWarning($"Could not find mapped new collider for '{oldCollider.name}' referenced by PhysBone '{pb.name}'. It might not be under the reference armature.");
+                        errors.Add($"PhysBone '{pb.name}' references a collider '{oldCollider.name}' but is not found under the reference armature. It is not included and you need to manually set it up.");
                     }
                 }
-                _pb.colliders = newColliderList; // This assignment is now valid.
+                _pb.colliders = newColliderList;
             }
         }
         Undo.CollapseUndoOperations(group);
-        Debug.Log("PhysBones extraction completed!");
+
+
+        if (results.Any())
+        {
+            Debug.Log("PhysBones extraction completed!\n" + string.Join("\n", results));
+        }
+        if (errors.Any())
+        {
+            Debug.LogError("However, during extraction there are errors:\n" + string.Join("\n", errors));
+        }
+
+        guiMessage.Show($"Extracted {physBones.Length} PhysBones and {physBoneColliders.Length} PhysBoneColliders. {errors.Count} errors.", 3.0);
     }
 }

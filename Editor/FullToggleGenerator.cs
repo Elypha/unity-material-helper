@@ -56,7 +56,7 @@ public class FullToggleGeneratorWindow : EditorWindow
 
         EditorGUILayout.EndScrollView();
 
-        Services.Separator(Color.grey, 1, 0, 4);
+        Services.Separator();
 
         guiMessage.Draw(10, Repaint);
 
