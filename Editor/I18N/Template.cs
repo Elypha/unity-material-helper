@@ -9,7 +9,7 @@ namespace Elypha.I18N
 
         public TemplateI18N(PluginLanguage language)
         {
-            this.language = language;
+            SetLanguage(language);
         }
 
         public void SetLanguage(PluginLanguage newLanguage)
