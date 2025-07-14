@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using Elypha.Helper;
+using Elypha.Common;
 using Elypha.I18N;
 
 
@@ -33,9 +33,9 @@ public class FindReferencingMaterials : EditorWindow
 
     void OnGUI()
     {
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+        Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
-        UnityHelper.DrawTitle1(i18n.Localise("Settings"));
+        Services.DrawTitle1(i18n.Localise("Settings"));
 
         DrawAddTexture();
 
@@ -72,7 +72,7 @@ public class FindReferencingMaterials : EditorWindow
         {
             alignment = TextAnchor.MiddleCenter,
             fontStyle = FontStyle.Bold,
-            normal = { textColor = UnityHelper.ColourTitle1 * 0.95f },
+            normal = { textColor = Services.ColourTitle1 * 0.95f },
         };
         GUI.Box(dropArea, "Drag Here", dropAreaStyle);
         HandleDragAndDrop(dropArea);

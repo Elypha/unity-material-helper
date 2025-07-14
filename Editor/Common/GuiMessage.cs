@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 
 
-namespace Elypha.Helper
+namespace Elypha.Common
 {
     public class GuiMessage
     {

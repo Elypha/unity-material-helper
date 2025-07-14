@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
 using System;
-using Elypha.Helper;
+using Elypha.Common;
 using Elypha.I18N;
 
 
@@ -48,14 +48,14 @@ public class MaterialBulkSwapper : EditorWindow
 
         // Settings
         // --------------------------------
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+        Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
-        UnityHelper.DrawTitle1(i18n.Localise("Settings"));
+        Services.DrawTitle1(i18n.Localise("Settings"));
 
 
         // Outfit Object
-        outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
-        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Path relative to"), assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
+        outfitObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Outfit Object"), outfitObject, typeof(GameObject), true, Services.LayoutExpanded);
+        assumedRootObject = (GameObject)EditorGUILayout.ObjectField(i18n.Localise("Path relative to"), assumedRootObject, typeof(GameObject), true, Services.LayoutExpanded);
         isOverrideOutfitObjectName = EditorGUILayout.Toggle(i18n.Localise("Override Outfit Object Name"), isOverrideOutfitObjectName);
         if (isOverrideOutfitObjectName)
         {
@@ -77,12 +77,12 @@ public class MaterialBulkSwapper : EditorWindow
         }
 
 
-        UnityHelper.DrawTitle1(i18n.Localise("Edit"));
+        Services.DrawTitle1(i18n.Localise("Edit"));
 
         // Renderers
         // --------------------------------
         GUILayout.BeginHorizontal();
-        UnityHelper.LabelBoldColored("Skinned Mesh Renderers", UnityHelper.ColourBold);
+        Services.LabelBoldColored("Skinned Mesh Renderers", Services.ColourBold);
         if (GUILayout.Button(i18n.Localise("Select All")))
         {
             foreach (var pair in rendererConfigs)
@@ -129,7 +129,7 @@ public class MaterialBulkSwapper : EditorWindow
         // Materials
         // --------------------------------
         GUILayout.BeginHorizontal();
-        UnityHelper.LabelBoldColored(i18n.Localise("Unique Materials"), UnityHelper.ColourBold);
+        Services.LabelBoldColored(i18n.Localise("Unique Materials"), Services.ColourBold);
         if (GUILayout.Button(i18n.Localise("Select All")))
         {
             foreach (var pair in materialConfigs)
@@ -156,7 +156,7 @@ public class MaterialBulkSwapper : EditorWindow
                 GUILayout.BeginHorizontal();
                 materialConfigs[mat].Enabled = EditorGUILayout.Toggle(materialConfigs[mat].Enabled, GUILayout.Width(16));
                 EditorGUILayout.ObjectField(mat, typeof(Material), false);
-                EditorGUILayout.LabelField("->", UnityHelper.LabelStyleCentred, GUILayout.Width(16));
+                EditorGUILayout.LabelField("->", Services.LabelStyleCentred, GUILayout.Width(16));
                 materialConfigs[mat].TargetMaterial = (Material)EditorGUILayout.ObjectField(materialConfigs[mat].TargetMaterial, typeof(Material), false);
                 GUILayout.EndHorizontal();
                 if (pair.Value.Excluded) GUI.enabled = true;
@@ -168,14 +168,14 @@ public class MaterialBulkSwapper : EditorWindow
             GUILayout.BeginHorizontal();
             EditorGUILayout.Toggle(false, GUILayout.Width(16));
             EditorGUILayout.ObjectField(null, typeof(Material), false);
-            EditorGUILayout.LabelField("->", UnityHelper.LabelStyleCentred, GUILayout.Width(25));
+            EditorGUILayout.LabelField("->", Services.LabelStyleCentred, GUILayout.Width(25));
             EditorGUILayout.ObjectField(null, typeof(Material), false);
             GUILayout.EndHorizontal();
             GUI.enabled = true;
         }
 
 
-        UnityHelper.DrawTitle1(i18n.Localise("Select Action"));
+        Services.DrawTitle1(i18n.Localise("Select Action"));
 
         // Actions
         // --------------------------------
@@ -200,7 +200,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void DrawReplaceTab()
     {
-        UnityHelper.LabelBoldColored(i18n.Localise("Replace Material"), UnityHelper.ColourBold);
+        Services.LabelBoldColored(i18n.Localise("Replace Material"), Services.ColourBold);
 
         GUILayout.BeginHorizontal();
         if (GUILayout.Button(i18n.Localise("Restore")))
@@ -216,11 +216,11 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void DrawCreateAnimationTab()
     {
-        UnityHelper.LabelBoldColored(i18n.Localise("Select Animation Clip for swap"), UnityHelper.ColourBold);
+        Services.LabelBoldColored(i18n.Localise("Select Animation Clip for swap"), Services.ColourBold);
 
         // Animation Clip
         GUILayout.BeginHorizontal();
-        animationClip = (AnimationClip)EditorGUILayout.ObjectField(i18n.Localise("Animation Clip"), animationClip, typeof(AnimationClip), false, UnityHelper.LayoutExpanded);
+        animationClip = (AnimationClip)EditorGUILayout.ObjectField(i18n.Localise("Animation Clip"), animationClip, typeof(AnimationClip), false, Services.LayoutExpanded);
         var _currentAnimationClip = animationClip == null ? -1 : animationClip.GetInstanceID();
         if (_lastAnimationClip != _currentAnimationClip)
         {
@@ -239,7 +239,7 @@ public class MaterialBulkSwapper : EditorWindow
 
 
         // Next Frame
-        UnityHelper.LabelBoldColored(i18n.Localise("Add keyframe"), UnityHelper.ColourBold);
+        Services.LabelBoldColored(i18n.Localise("Add keyframe"), Services.ColourBold);
 
         if (animationClip == null) GUI.enabled = false;
         targetFrameNumber = EditorGUILayout.IntField(i18n.Localise("Target Frame"), targetFrameNumber);
@@ -266,12 +266,12 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void LoadRenderers()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
         if (outfitObject == null) return;
 
         rendererConfigs.Clear();
 
-        var renderers = UnityHelper.GetSkinnedGameObjects(outfitObject);
+        var renderers = Services.GetSkinnedGameObjects(outfitObject);
         foreach (GameObject go in renderers)
         {
             rendererConfigs[go] = new RendererConfig
@@ -283,7 +283,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void LoadMaterials()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
         if (outfitObject == null) return;
 
         materialConfigs.Clear();
@@ -321,7 +321,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void LoadAnimationClip()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
         if (animationClip == null) return;
 
         clipNextFrame = animationClip.empty ? 0 : (int)(animationClip.length * animationClip.frameRate);
@@ -332,13 +332,13 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void AddMaterialSwapKeyframes()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
 
         var renderers = GetEnabledRenderers();
 
         foreach (SkinnedMeshRenderer renderer in renderers)
         {
-            var path = UnityHelper.GetRelativePathInHierarchy(assumedRootObject.transform, renderer.transform);
+            var path = renderer.transform.GetRelativePath(assumedRootObject.transform);
 
             if (isOverrideOutfitObjectName && !string.IsNullOrEmpty(overrideOutfitObjectName))
             {
@@ -395,7 +395,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void ApplyInPlaceMaterialOriginal()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
 
         var renderers = GetEnabledRenderers();
 
@@ -418,7 +418,7 @@ public class MaterialBulkSwapper : EditorWindow
 
     private void ApplyInPlaceMaterialSwapped()
     {
-        UnityHelper.Unfocus();
+        Services.Unfocus();
 
         var renderers = GetEnabledRenderers();
 

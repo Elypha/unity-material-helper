@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 
-namespace Elypha.Helper
+namespace Elypha.Common
 {
-    public static class UnityHelper
+    public static class Services
     {
         public static Color ColourTitle1 = new(230 / 255f, 194 / 255f, 153 / 255f);
         public static Color ColourTitle2 = new(130 / 255f, 187 / 255f, 255 / 255f);
@@ -21,6 +21,7 @@ namespace Elypha.Helper
         public static readonly GUIStyle LabelStyleCentred = new(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
 
 
+        public static void Separator() => Separator(Color.grey, 1, 0, 4);
         public static void Separator(Color colour, int thickness = 2, int paddingTop = 4, int paddingBottom = 4)
         {
             Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(paddingTop + paddingBottom + thickness));
@@ -38,25 +39,6 @@ namespace Elypha.Helper
         }
 
         public static void Unfocus() => GUI.FocusControl(null);
-
-        public static string GetRelativePathInHierarchy(Transform root, Transform target)
-        {
-            if (root == target)
-            {
-                return "";
-            }
-
-            var pathStack = new Stack<string>();
-            var current = target;
-
-            while (current != null && current != root)
-            {
-                pathStack.Push(current.name);
-                current = current.parent;
-            }
-
-            return string.Join("/", pathStack);
-        }
 
         public static List<GameObject> GetSkinnedGameObjects(GameObject parent)
         {
@@ -78,11 +60,30 @@ namespace Elypha.Helper
             }
         }
 
-        public static bool IsDefaultTransform(Transform transform)
+        public static bool IsTransformValueDefault(Transform transform)
         {
             return transform.localPosition == Vector3.zero
                 && transform.localRotation == Quaternion.identity
                 && transform.localScale == Vector3.one;
+        }
+
+        public static bool IsPhysBoneColliderTransformValueDefault(VRCPhysBoneCollider pbc)
+        {
+            return pbc.position == Vector3.zero
+                && pbc.rotation == Quaternion.identity;
+        }
+
+        public static Transform GetCorrespondingTransformByRelativePath(Transform source, Transform sourceRoot, Transform targetRoot)
+        {
+            if (source == null || sourceRoot == null || targetRoot == null) return null;
+
+            string relativePath = source.GetRelativePath(sourceRoot);
+            Transform targetTransform = targetRoot.Find(relativePath);
+
+            if (targetTransform == null)
+                Debug.LogWarning($"Target transform not found for: {relativePath}");
+
+            return targetTransform;
         }
 
         public static Transform GetPhysBoneRoot(VRCPhysBone physBone)
@@ -91,31 +92,12 @@ namespace Elypha.Helper
             return physBone.transform;
         }
 
-        public static Transform GetPhysBoneColliderRoot(VRCPhysBoneCollider physBoneCollider)
-        {
-            // If rootTransform is not set || set to itself, use the parent transform
-            if (physBoneCollider.rootTransform == null || physBoneCollider.rootTransform == physBoneCollider.transform)
-            {
-                if (IsDefaultTransform(physBoneCollider.transform))
-                {
-                    return physBoneCollider.transform.parent.transform;
-                }
-
-                Debug.LogError($"PhysBoneCollider: {physBoneCollider.name} already has transform set");
-                return physBoneCollider.transform.parent.transform;
-            }
-
-            // If rootTransform is set to any other, use the rootTransform
-            return physBoneCollider.rootTransform;
-        }
-
         public static void DrawTitle1(string title, float spacePixels = 8)
         {
             GUILayout.Space(spacePixels);
             LabelBoldColored($"# {title}", ColourTitle1);
-            Separator(Color.grey, 1, 0, 4);
+            Separator();
         }
-
 
         public static void DrawAdvancedSettings(ref bool showAdvancedSettings, ref I18N.PluginLanguage language, I18N.TemplateI18N i18n)
         {
@@ -144,44 +126,6 @@ namespace Elypha.Helper
 
     }
 
-    public static class Utils
-    {
-        public static string ReplaceLastOccurrence(string source, string find, string replace)
-        {
-            int place = source.LastIndexOf(find);
 
-            if (place == -1) return source;
 
-            string result = source.Remove(place, find.Length).Insert(place, replace);
-            return result;
-        }
-    }
-
-}
-
-public static class TransformExtensions
-{
-    public static string GetPath(this Transform current)
-    {
-        if (current == null) return "";
-        var path = current.name;
-        while (current.parent != null)
-        {
-            current = current.parent;
-            path = current.name + "/" + path;
-        }
-        return path;
-    }
-
-    public static string GetRelativePath(this Transform current, Transform relativeTo)
-    {
-        if (current == null || relativeTo == null) return "";
-        var path = current.name;
-        while (current.parent != null && current.parent != relativeTo)
-        {
-            current = current.parent;
-            path = current.name + "/" + path;
-        }
-        return path;
-    }
 }

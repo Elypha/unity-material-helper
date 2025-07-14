@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
-using Elypha.Helper;
+using Elypha.Common;
 using Elypha.I18N;
 
 
@@ -35,14 +35,14 @@ public class FullToggleGeneratorWindow : EditorWindow
 
     private void OnGUI()
     {
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+        Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
-        UnityHelper.DrawTitle1(i18n.Localise("Settings"));
+        Services.DrawTitle1(i18n.Localise("Settings"));
 
         GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
 
         targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
-        assumedRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", assumedRootObject, typeof(GameObject), true, UnityHelper.LayoutExpanded);
+        assumedRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", assumedRootObject, typeof(GameObject), true, Services.LayoutExpanded);
 
         EditorGUILayout.Space(8);
 
@@ -56,7 +56,7 @@ public class FullToggleGeneratorWindow : EditorWindow
 
         EditorGUILayout.EndScrollView();
 
-        UnityHelper.Separator(Color.grey, 1, 0, 4);
+        Services.Separator(Color.grey, 1, 0, 4);
 
         guiMessage.Draw(10, Repaint);
 
@@ -104,7 +104,7 @@ public class FullToggleGeneratorWindow : EditorWindow
             group.groupName = EditorGUILayout.TextField(group.groupName, new GUIStyle()
             {
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = UnityHelper.ColourTitle2 }
+                normal = { textColor = Services.ColourTitle2 }
             });
 
             GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);

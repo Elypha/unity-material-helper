@@ -2,9 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
-using System;
-using Elypha.Helper;
-using Elypha.I18N;
+using Elypha.Common;
 
 public class AnimationClipViewerWindow : EditorWindow
 {
@@ -23,7 +21,7 @@ public class AnimationClipViewerWindow : EditorWindow
 
     private void OnGUI()
     {
-        UnityHelper.DrawTitle1("Settings");
+        Services.DrawTitle1("Settings");
 
         EditorGUILayout.LabelField("Animation Clip", EditorStyles.boldLabel);
 
@@ -53,7 +51,7 @@ public class AnimationClipViewerWindow : EditorWindow
             Repaint();
         }
 
-        UnityHelper.DrawTitle1("Material List");
+        Services.DrawTitle1("Material List");
 
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         DrawMaterialList();

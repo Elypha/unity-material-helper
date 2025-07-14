@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
-using Elypha.Helper;
+using Elypha.Common;
 using Elypha.I18N;
 
 
@@ -30,9 +30,9 @@ public class SoftDisableEditor : EditorWindow
     private void OnGUI()
     {
 
-        UnityHelper.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+        Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
 
-        UnityHelper.DrawTitle1(i18n.Localise("Settings"));
+        Services.DrawTitle1(i18n.Localise("Settings"));
 
         EditorGUILayout.LabelField("Target Animation Clip", EditorStyles.boldLabel);
         targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
@@ -48,7 +48,7 @@ public class SoftDisableEditor : EditorWindow
 
         EditorGUILayout.EndScrollView();
 
-        UnityHelper.Separator(Color.grey, 1, 0, 4);
+        Services.Separator(Color.grey, 1, 0, 4);
 
         guiMessage.Draw(10, Repaint);
 
