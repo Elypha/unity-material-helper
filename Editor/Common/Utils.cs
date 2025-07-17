@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,12 +13,23 @@ namespace Elypha.Common
 
         public static string ReplaceLastOccurrence(string source, string find, string replace)
         {
-            int place = source.LastIndexOf(find);
+            var place = source.LastIndexOf(find);
 
             if (place == -1) return source;
 
             string result = source.Remove(place, find.Length).Insert(place, replace);
             return result;
+        }
+
+        public static int FindLastIndexOf(string source, Regex regex)
+        {
+            var lastIndex = -1;
+            MatchCollection matches = regex.Matches(source);
+            if (matches.Count > 0)
+            {
+                lastIndex = matches[^1].Index;
+            }
+            return lastIndex;
         }
 
         public static GUIStyle GetMonoStyle()
