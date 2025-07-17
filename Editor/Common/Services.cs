@@ -1,6 +1,6 @@
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 
 
@@ -11,6 +11,7 @@ namespace Elypha.Common
         public static Color ColourTitle1 = new(230 / 255f, 194 / 255f, 153 / 255f);
         public static Color ColourTitle2 = new(130 / 255f, 187 / 255f, 255 / 255f);
         public static Color ColourBold = new(210 / 255f, 210 / 255f, 210 / 255f);
+        public static Color ColourLightBlue = new(102 / 255f, 153 / 255f, 255 / 255f);
 
 
         public static readonly GUILayoutOption[] LayoutExpanded = new GUILayoutOption[] {
