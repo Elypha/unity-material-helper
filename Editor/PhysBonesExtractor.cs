@@ -8,7 +8,7 @@ using VRC.Dynamics;
 
 public class PhysBonesExtractor : EditorWindow
 {
-    [MenuItem("Tools/Elypha Toolkit/Phys Bones Extractor")]
+    [MenuItem("Elypha/Phys Bones Extractor")]
     public static void ShowWindow()
     {
         var window = GetWindow<PhysBonesExtractor>("Phys Bones Extractor");

@@ -20,7 +20,7 @@ public class SoftDisableEditor : EditorWindow
     private readonly GuiMessage guiMessage = new();
 
 
-    [MenuItem("Tools/Elypha Toolkit/Soft Disable")]
+    [MenuItem("Elypha/Soft Disable")]
     public static void ShowWindow()
     {
         var window = GetWindow<SoftDisableEditor>("Soft Disable");

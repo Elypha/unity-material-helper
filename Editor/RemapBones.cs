@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class RemapBones : EditorWindow
 {
-    [MenuItem("Tools/Elypha Toolkit/Remap Bones")]
+    [MenuItem("Elypha/Remap Bones")]
     public static void ShowWindow()
     {
         var window = GetWindow<RemapBones>("Remap Bones");

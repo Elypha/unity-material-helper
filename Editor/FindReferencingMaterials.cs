@@ -22,7 +22,7 @@ public class FindReferencingMaterials : EditorWindow
     private readonly TemplateI18N i18n = new(language);
     private readonly GuiMessage guiMessage = new();
 
-    [MenuItem("Tools/Elypha Toolkit/Find Referencing Materials")]
+    [MenuItem("Elypha/Find Referencing Materials")]
     public static void ShowWindow()
     {
         var window = GetWindow<FindReferencingMaterials>("Find Referencing Materials");

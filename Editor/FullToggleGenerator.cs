@@ -21,7 +21,7 @@ public class FullToggleGeneratorWindow : EditorWindow
     private readonly GuiMessage guiMessage = new();
 
 
-    [MenuItem("Tools/Elypha Toolkit/Full Toggle Generator")]
+    [MenuItem("Elypha/Full Toggle Generator")]
     public static void ShowWindow()
     {
         var window = GetWindow<FullToggleGeneratorWindow>("Full Toggle Generator");
