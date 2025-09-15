@@ -89,6 +89,7 @@ public class MaterialBulkSwapper : EditorWindow
             {
                 pair.Value.Enabled = true;
             }
+            LoadMaterials();
         }
         if (GUILayout.Button(i18n.Localise("Select None")))
         {
@@ -96,6 +97,7 @@ public class MaterialBulkSwapper : EditorWindow
             {
                 pair.Value.Enabled = false;
             }
+            LoadMaterials();
         }
         GUILayout.EndHorizontal();
 
@@ -154,7 +156,12 @@ public class MaterialBulkSwapper : EditorWindow
                 var mat = pair.Key;
                 if (pair.Value.Excluded) GUI.enabled = false;
                 GUILayout.BeginHorizontal();
+                var currentState = materialConfigs[mat].Enabled;
                 materialConfigs[mat].Enabled = EditorGUILayout.Toggle(materialConfigs[mat].Enabled, GUILayout.Width(16));
+                if (currentState != materialConfigs[mat].Enabled)
+                {
+                    LoadRenderers();
+                }
                 EditorGUILayout.ObjectField(mat, typeof(Material), false);
                 EditorGUILayout.LabelField("->", Services.LabelStyleCentred, GUILayout.Width(16));
                 materialConfigs[mat].TargetMaterial = (Material)EditorGUILayout.ObjectField(materialConfigs[mat].TargetMaterial, typeof(Material), false);
@@ -278,6 +285,24 @@ public class MaterialBulkSwapper : EditorWindow
             {
                 OriginalMaterials = go.GetComponent<SkinnedMeshRenderer>().sharedMaterials,
             };
+        }
+
+        // set to off, if all its materials are not enabled
+        foreach (var pair in rendererConfigs)
+        {
+            bool hasEnabledMaterial = false;
+            foreach (var mat in pair.Value.OriginalMaterials)
+            {
+                if (materialConfigs.ContainsKey(mat) && materialConfigs[mat].Enabled)
+                {
+                    hasEnabledMaterial = true;
+                    break;
+                }
+            }
+            if (!hasEnabledMaterial)
+            {
+                pair.Value.Enabled = false;
+            }
         }
     }
 
