@@ -21,7 +21,7 @@ public class SdkBuildLogViewer : EditorWindow
     };
 
 
-    [MenuItem("Tools/Elypha Toolkit/SDK Build Log Viewer")]
+    [MenuItem("Elypha/Editor/SDK Build Log Viewer", false, 1)]
     public static void ShowWindow()
     {
         var window = GetWindow(typeof(SdkBuildLogViewer));

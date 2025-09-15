@@ -34,7 +34,7 @@ public class MaterialBulkSwapper : EditorWindow
     private int actionTabIndex = 0;
 
 
-    [MenuItem("Tools/Elypha Toolkit/Material Bulk Swapper")]
+    [MenuItem("Elypha/Material Bulk Swapper")]
     public static void ShowWindow()
     {
         var window = GetWindow<MaterialBulkSwapper>("Material Bulk Swapper");

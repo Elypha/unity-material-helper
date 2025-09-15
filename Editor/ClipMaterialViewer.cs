@@ -13,7 +13,7 @@ public class AnimationClipViewerWindow : EditorWindow
     private readonly List<AnimatedPath> processedPaths = new();
 
 
-    [MenuItem("Tools/Elypha Toolkit/Animation Clip Material Viewer")]
+    [MenuItem("Elypha/Animation Clip Material Viewer")]
     public static void ShowWindow()
     {
         GetWindow<AnimationClipViewerWindow>("Clip Material Viewer");

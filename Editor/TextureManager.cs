@@ -32,7 +32,7 @@ public class TextureManager : EditorWindow
         public bool HasPlatformOverrides;
     }
 
-    [MenuItem("Tools/Elypha Toolkit/Texture Manager")]
+    [MenuItem("Elypha/Texture Manager")]
     public static void ShowWindow()
     {
         var window = GetWindow<TextureManager>("Texture Manager");
