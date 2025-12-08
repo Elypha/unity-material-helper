@@ -228,7 +228,8 @@ public class MaterialSwapper : EditorWindow
         GUILayout.BeginVertical(GUILayout.MaxWidth(maxWidth));
         targetMaterialsList.DoLayoutList();
 
-        // Drag and drop area
+        // Drag and drop area; clear button
+        GUILayout.BeginHorizontal();
         var dropRect = GUILayoutUtility.GetRect(0, 32, GUILayout.ExpandWidth(true));
         GUI.Box(dropRect, "Drop Materials Here", new GUIStyle(GUI.skin.box) { alignment = TextAnchor.MiddleCenter });
         if (Event.current.type == EventType.DragUpdated || Event.current.type == EventType.DragPerform)
@@ -250,6 +251,13 @@ public class MaterialSwapper : EditorWindow
                 Event.current.Use();
             }
         }
+        if (GUILayout.Button("↺", new GUILayoutOption[] { GUILayout.Width(28), GUILayout.Height(28) }))
+        {
+            targetMaterials.Clear();
+        }
+        GUILayout.EndHorizontal();
+
+
         GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
