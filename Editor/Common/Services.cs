@@ -33,10 +33,15 @@ namespace Elypha.Common
             EditorGUI.DrawRect(r, colour);
         }
 
-        public static void LabelBoldColored(string label, Color color)
+        public static void LabelBoldColored(string label, Color color, float width = -1, float minimalWidth = 32, float maximalWidth = 500)
         {
             var style = new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = color } };
-            EditorGUILayout.LabelField(label, style);
+            EditorGUILayout.LabelField(label, style, new GUILayoutOption[]
+            {
+                GUILayout.MinWidth(minimalWidth),
+                GUILayout.MaxWidth(maximalWidth),
+                width > 0 ? GUILayout.Width(width) : GUILayout.ExpandWidth(true)
+            });
         }
 
         public static void Unfocus() => GUI.FocusControl(null);
