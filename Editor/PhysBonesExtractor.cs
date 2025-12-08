@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using System.Linq;
 using Elypha.Common;
-using VRC.SDK3.Dynamics.PhysBone.Components;
+using UnityEditor;
+using UnityEngine;
 using VRC.Dynamics;
+using VRC.SDK3.Dynamics.PhysBone.Components;
 
 public class PhysBonesExtractor : EditorWindow
 {
@@ -15,6 +15,7 @@ public class PhysBonesExtractor : EditorWindow
         window.minSize = new Vector2(400, 400);
     }
 
+    private GameObject referenceOutfit;
     private GameObject referenceArmature;
     private GameObject targetArmature;
     private GameObject physBoneParentObject;
@@ -23,11 +24,10 @@ public class PhysBonesExtractor : EditorWindow
     private VRCPhysBoneCollider[] physBoneColliders;
     private readonly Dictionary<VRCPhysBoneCollider, VRCPhysBoneCollider> pbcMap = new();
 
-    private readonly List<string> referenceOnly = new();
-    private readonly List<string> targetOnly = new();
-
-    private readonly List<string> nullColliderStatus = new();
-    private readonly List<string> extraComponentStatus = new();
+    private readonly List<string> armatureReferenceOnlyReport = new();
+    private readonly List<string> armatureTargetOnlyReport = new();
+    private readonly List<string> nullColliderReport = new();
+    private readonly List<string> extraComponentReport = new();
 
     private readonly GuiMessage guiMessage = new();
 
@@ -35,6 +35,7 @@ public class PhysBonesExtractor : EditorWindow
 
     private void OnGUI()
     {
+        referenceOutfit = (GameObject)EditorGUILayout.ObjectField("Reference Outfit", referenceOutfit, typeof(GameObject), true);
         referenceArmature = (GameObject)EditorGUILayout.ObjectField("Reference Armature", referenceArmature, typeof(GameObject), true);
         targetArmature = (GameObject)EditorGUILayout.ObjectField("Target Armature", targetArmature, typeof(GameObject), true);
         physBoneParentObject = (GameObject)EditorGUILayout.ObjectField("Create PBs under", physBoneParentObject, typeof(GameObject), true);
@@ -43,13 +44,12 @@ public class PhysBonesExtractor : EditorWindow
         GUI.enabled = referenceArmature && targetArmature;
         if (GUILayout.Button("Analyse Armature"))
         {
-            nullColliderStatus.Clear();
-            extraComponentStatus.Clear();
-            referenceOnly.Clear();
-            targetOnly.Clear();
+            nullColliderReport.Clear();
+            extraComponentReport.Clear();
+            armatureReferenceOnlyReport.Clear();
+            armatureTargetOnlyReport.Clear();
 
-            UpdatePhysBonesFromReference();
-            UpdateArmature();
+            FetchArmatureData();
         }
         GUI.enabled = true;
 
@@ -70,9 +70,9 @@ public class PhysBonesExtractor : EditorWindow
 
         EditorGUILayout.LabelField("Null collider references:", EditorStyles.boldLabel);
         EditorGUI.indentLevel++;
-        if (nullColliderStatus.Any())
+        if (nullColliderReport.Any())
         {
-            foreach (var line in nullColliderStatus)
+            foreach (var line in nullColliderReport)
             {
                 EditorGUILayout.LabelField(line);
             }
@@ -85,9 +85,9 @@ public class PhysBonesExtractor : EditorWindow
 
         EditorGUILayout.LabelField("Extra components on reference armature:", EditorStyles.boldLabel);
         EditorGUI.indentLevel++;
-        if (extraComponentStatus.Any())
+        if (extraComponentReport.Any())
         {
-            foreach (var line in extraComponentStatus)
+            foreach (var line in extraComponentReport)
             {
                 EditorGUILayout.LabelField(line);
             }
@@ -98,30 +98,34 @@ public class PhysBonesExtractor : EditorWindow
         }
         EditorGUI.indentLevel--;
 
-        EditorGUILayout.LabelField("Armature Difference:", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Armature Reference Only:", EditorStyles.boldLabel);
         EditorGUI.indentLevel++;
-        if (!referenceOnly.Any() && !targetOnly.Any())
+        if (armatureReferenceOnlyReport.Any())
         {
-            EditorGUILayout.LabelField("Ok");
+            foreach (var text in armatureReferenceOnlyReport)
+            {
+                EditorGUILayout.LabelField(text);
+            }
         }
         else
         {
-            if (referenceOnly.Any())
+            EditorGUILayout.LabelField("Ok");
+        }
+        EditorGUI.indentLevel--;
+
+
+        EditorGUILayout.LabelField("Armature Target Only:", EditorStyles.boldLabel);
+        EditorGUI.indentLevel++;
+        if (armatureTargetOnlyReport.Any())
+        {
+            foreach (var text in armatureTargetOnlyReport)
             {
-                Services.LabelBoldColored("Reference Only", Services.ColourTitle2);
-                foreach (var ro in referenceOnly)
-                {
-                    EditorGUILayout.LabelField(ro);
-                }
+                EditorGUILayout.LabelField(text);
             }
-            if (targetOnly.Any())
-            {
-                Services.LabelBoldColored("Target Only", Services.ColourTitle2);
-                foreach (var to in targetOnly)
-                {
-                    EditorGUILayout.LabelField(to);
-                }
-            }
+        }
+        else
+        {
+            EditorGUILayout.LabelField("Ok");
         }
         EditorGUI.indentLevel--;
 
@@ -131,61 +135,62 @@ public class PhysBonesExtractor : EditorWindow
 
     }
 
-    private void UpdatePhysBonesFromReference()
+    private void FetchArmatureData()
     {
-        physBones = referenceArmature.GetComponentsInChildren<VRCPhysBone>(true);
-        physBoneColliders = referenceArmature.GetComponentsInChildren<VRCPhysBoneCollider>(true);
+        physBones = referenceOutfit.GetComponentsInChildren<VRCPhysBone>(true);
+        physBoneColliders = referenceOutfit.GetComponentsInChildren<VRCPhysBoneCollider>(true);
 
         foreach (var pb in physBones)
         {
             if (pb.colliders.Any(x => x == null))
             {
-                var relative_path = pb.transform.GetRelativePath(referenceArmature.transform);
-                nullColliderStatus.Add($"PhysBone '{relative_path}' has null colliders.");
+                var relative_path = pb.transform.GetRelativePath(referenceOutfit.transform);
+                nullColliderReport.Add($"PhysBone '{relative_path}' has null colliders.");
             }
         }
-    }
 
-    private void UpdateArmature()
-    {
-        var referencePaths = referenceArmature.GetComponentsInChildren<Transform>(true)
+        var referenceArmatureTransforms = referenceArmature.GetComponentsInChildren<Transform>(true);
+        var referenceArmatureRelPaths = referenceArmatureTransforms
             .Select(t => t.GetRelativePath(referenceArmature.transform))
             .ToHashSet();
-        var targetPaths = targetArmature.GetComponentsInChildren<Transform>(true)
+
+        var targetArmatureTransforms = targetArmature.GetComponentsInChildren<Transform>(true);
+        var targetArmatureRelPaths = targetArmatureTransforms
             .Select(t => t.GetRelativePath(targetArmature.transform))
             .ToHashSet();
 
-        foreach (var referenceTransform in referenceArmature.GetComponentsInChildren<Transform>(true))
+        foreach (var transform in referenceArmatureTransforms)
         {
-            var relativePath = referenceTransform.GetRelativePath(referenceArmature.transform);
-            if (!targetPaths.Contains(relativePath))
+            var path = transform.GetRelativePath(referenceArmature.transform);
+            if (!targetArmatureRelPaths.Contains(path))
             {
-                if (referenceTransform.GetComponent<VRCPhysBone>() != null || referenceTransform.GetComponent<VRCPhysBoneCollider>() != null)
-                    continue;
-
-                referenceOnly.Add(relativePath);
+                var numPBs = transform.GetComponents<VRCPhysBone>().Length;
+                var numPBCs = transform.GetComponents<VRCPhysBoneCollider>().Length;
+                armatureReferenceOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
             }
 
-            foreach (var component in referenceTransform.GetComponents<Component>())
+            foreach (var component in transform.GetComponents<Component>())
             {
                 if (component is Transform || component is VRCPhysBone || component is VRCPhysBoneCollider)
                     continue;
 
                 var name = component.GetType().Name;
-                // skip modular avatar
-                if (relativePath == "" && name.StartsWith("ModularAvatar"))
+                // skip modular avatar on referenceArmature
+                if (path == "" && name.StartsWith("ModularAvatar"))
                     continue;
 
-                extraComponentStatus.Add($"Object '{relativePath}' has extra component: <{component.GetType().Name}>.");
+                extraComponentReport.Add($"{path}: <{name}>.");
             }
         }
 
-        foreach (var targetTransform in targetArmature.GetComponentsInChildren<Transform>(true))
+        foreach (var transform in targetArmatureTransforms)
         {
-            var relativePath = targetTransform.GetRelativePath(targetArmature.transform);
-            if (!referencePaths.Contains(relativePath))
+            var path = transform.GetRelativePath(targetArmature.transform);
+            if (!referenceArmatureRelPaths.Contains(path))
             {
-                targetOnly.Add(relativePath);
+                var numPBs = transform.GetComponents<VRCPhysBone>().Length;
+                var numPBCs = transform.GetComponents<VRCPhysBoneCollider>().Length;
+                armatureTargetOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
             }
         }
     }
@@ -254,7 +259,7 @@ public class PhysBonesExtractor : EditorWindow
                 _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, referenceArmature.transform, targetArmature.transform);
 
                 // Technically, we can just copy the values but since I haven't seen one, please also double-check the results.
-                errors.Add($"PhysBoneCollider '{pbc.name}' has a rootTransform set to '{pbcRoot.name}'. It is created, but you need to double-check the results.");
+                errors.Add($"PhysBoneCollider '{pbc.name}' has a rootTransform set to '{pbcRoot.name}' -> '{(_colliderRoot == null ? "null" : _colliderRoot.name)}', you need to double-check the results.");
                 _position = pbc.transform.localPosition;
                 _rotation = pbc.transform.localRotation;
                 _scale = pbc.transform.localScale;
