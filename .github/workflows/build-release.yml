@@ -45,6 +45,8 @@ jobs:
       - name: Make Release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
+          prerelease: false
           files: |
             ${{ steps.info.outputs.zipName }}
             ${{ steps.info.outputs.unitypackageName }}
