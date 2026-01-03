@@ -17,14 +17,14 @@ public static class TransformExtensions
         return string.Join("/", pathStack);
     }
 
-    public static string GetRelativePath(this Transform current, Transform relativeTo)
+    public static string GetRelativePath(this Transform child, Transform root)
     {
-        if (current == relativeTo) return "";
+        if (child == root) return "";
 
         var pathStack = new Stack<string>();
-        var pointer = current;
+        var pointer = child;
 
-        while (pointer != null && pointer != relativeTo)
+        while (pointer != null && pointer != root && pointer.parent != null)
         {
             pathStack.Push(pointer.name);
             pointer = pointer.parent;

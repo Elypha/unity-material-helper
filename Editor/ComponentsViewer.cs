@@ -37,6 +37,9 @@ public class ComponentsViewer : EditorWindow
     {
         // Input
         // --------------------------------
+        var originalLabelWidth = EditorGUIUtility.labelWidth;
+        EditorGUIUtility.labelWidth = 200f;
+
         EditorGUI.BeginChangeCheck();
         targetObject = (GameObject)EditorGUILayout.ObjectField("Target Object", targetObject, typeof(GameObject), true);
         ignoreSkinnedMeshRenderers = EditorGUILayout.Toggle("Ignore Skinned Mesh Renderers", ignoreSkinnedMeshRenderers);
@@ -49,6 +52,8 @@ public class ComponentsViewer : EditorWindow
                 AnalyseExistingComponents(targetObject);
             }
         }
+
+        EditorGUIUtility.labelWidth = originalLabelWidth;
 
         Services.Separator();
 
