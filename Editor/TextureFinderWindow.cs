@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Elypha.Common;
 using UnityEditor;
 using UnityEngine;
@@ -16,22 +17,24 @@ public class TextureFinderWindow : EditorWindow
     {
         public Texture TextureObject;
         public string Path;
+        public TextureImporter Importer;
     }
 
     [MenuItem("Elypha/Texture Finder")]
     public static void ShowWindow()
     {
         var window = GetWindow<TextureFinderWindow>("Texture Finder");
-        window.minSize = new Vector2(400, 400);
+        window.minSize = new Vector2(500, 400);
     }
 
     private Vector2 scrollPosition;
     private bool isResizing = false;
-    private float nameColumnWidth = 200f; // Initial width of the name column
+    private float nameColumnWidth = 200f;
+    private const float actionColumnWidth = 60f;
     private GUIStyle pathTextStyle;
 
-    private DefaultAsset targetFolder; // Input folder
-    private FilterType currentFilter = FilterType.UsedCrunchCompression; // Currently selected filter
+    private DefaultAsset targetFolder;
+    private FilterType currentFilter = FilterType.UsedCrunchCompression;
 
     private List<TextureResult> reportData = new List<TextureResult>();
 
@@ -39,7 +42,7 @@ public class TextureFinderWindow : EditorWindow
     {
         pathTextStyle = new GUIStyle(EditorStyles.label)
         {
-            wordWrap = false, // Paths are usually long, so it's better not to wrap text to keep it tidy
+            wordWrap = false,
             richText = true,
             alignment = TextAnchor.MiddleLeft
         };
@@ -64,22 +67,48 @@ public class TextureFinderWindow : EditorWindow
 
         EditorGUIUtility.labelWidth = originalLabelWidth;
 
+
+        // Buttons Section
+        // --------------------------------
+        GUILayout.Space(5);
+
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Refresh", GUILayout.Height(24)))
+        {
+            AnalyzeTextures();
+        }
+
+        EditorGUI.BeginDisabledGroup(reportData == null || reportData.Count == 0);
+        if (GUILayout.Button("Select All", GUILayout.Height(24)))
+        {
+            SelectAllResults();
+        }
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUILayout.EndHorizontal();
+
         Services.Separator();
 
         // Report Header
         // --------------------------------
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+        // 1. Action Header
+        GUILayout.Label("Action", GUILayout.Width(actionColumnWidth));
+
+        // 2. Texture Asset Header
         GUILayout.Label("Texture Asset", GUILayout.Width(nameColumnWidth));
 
-        // Draw resize handle area
+        // Resize Handle
         Rect resizeRect = GUILayoutUtility.GetLastRect();
         resizeRect.x += resizeRect.width;
         resizeRect.width = 5f;
 
+        // 3. Path Header
         GUILayout.Label("Asset Path");
         EditorGUILayout.EndHorizontal();
 
-        // handle column resizing
         HandleResize(resizeRect);
 
         // Report Content
@@ -92,12 +121,34 @@ public class TextureFinderWindow : EditorWindow
             {
                 EditorGUILayout.BeginHorizontal("box");
 
-                // First column: clickable object
+                // Col 1: Action (Button or None)
+                // -----------------------------
+                GUILayout.BeginVertical(GUILayout.Width(actionColumnWidth));
+                if (currentFilter == FilterType.IsNormalMap)
+                {
+                    bool isEligible = IsEligibleForBC5(item.Importer);
+
+                    EditorGUI.BeginDisabledGroup(!isEligible);
+                    if (GUILayout.Button("BC5", GUILayout.Height(18)))
+                    {
+                        ApplyBC5Settings(item.Importer);
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
+                else
+                {
+                    GUILayout.Label("None", EditorStyles.miniLabel);
+                }
+                GUILayout.EndVertical();
+
+                // Col 2: Clickable Object
+                // -----------------------------
                 EditorGUILayout.ObjectField(item.TextureObject, typeof(Texture), false, GUILayout.Width(nameColumnWidth));
 
                 GUILayout.Space(10);
 
-                // Second column: path text
+                // Col 3: Path text
+                // -----------------------------
                 EditorGUILayout.LabelField(item.Path, pathTextStyle);
 
                 EditorGUILayout.EndHorizontal();
@@ -118,6 +169,44 @@ public class TextureFinderWindow : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
+    private bool IsEligibleForBC5(TextureImporter importer)
+    {
+        if (importer == null) return false;
+
+        // 1. Check if Standalone (Windows/Mac/Linux) settings are overridden
+        var settings = importer.GetPlatformTextureSettings("Standalone");
+        if (settings.overridden) return false;
+
+        // 2. Check if default settings are "Default"
+        // Compressed = Compression @ Normal Quality
+        // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/TextureImporterCompression.html
+        bool isDefaultCompression = importer.textureCompression == TextureImporterCompression.Compressed;
+        bool isNotCrunched = !importer.crunchedCompression;
+
+        return isDefaultCompression && isNotCrunched;
+    }
+
+    private void ApplyBC5Settings(TextureImporter importer)
+    {
+        if (importer == null) return;
+
+        // Get Standalone settings
+        TextureImporterPlatformSettings settings = importer.GetPlatformTextureSettings("Standalone");
+
+        // Set Override
+        settings.overridden = true;
+        settings.name = "Standalone";
+
+        // Set parameters
+        settings.maxTextureSize = importer.maxTextureSize; // Keep the same size as Default
+        settings.resizeAlgorithm = TextureResizeAlgorithm.Mitchell;
+        settings.format = TextureImporterFormat.BC5;
+
+        // Apply settings
+        importer.SetPlatformTextureSettings(settings);
+        importer.SaveAndReimport();
+    }
+
     private void HandleResize(Rect resizeRect)
     {
         EditorGUIUtility.AddCursorRect(resizeRect, MouseCursor.ResizeHorizontal);
@@ -129,8 +218,8 @@ public class TextureFinderWindow : EditorWindow
 
         if (isResizing)
         {
-            nameColumnWidth = Event.current.mousePosition.x;
-            nameColumnWidth = Mathf.Clamp(nameColumnWidth, 100f, position.width - 100f);
+            nameColumnWidth = Event.current.mousePosition.x - actionColumnWidth; // 减去第一列的宽度
+            nameColumnWidth = Mathf.Clamp(nameColumnWidth, 100f, position.width - 100f - actionColumnWidth);
             Repaint();
         }
 
@@ -148,14 +237,12 @@ public class TextureFinderWindow : EditorWindow
 
         string folderPath = AssetDatabase.GetAssetPath(targetFolder);
 
-        // Ensure the selected object is a folder
         if (!Directory.Exists(folderPath))
         {
             Debug.LogWarning("Selected object is not a folder.");
             return;
         }
 
-        // Find all GUIDs of texture types
         string[] guids = AssetDatabase.FindAssets("t:Texture", new[] { folderPath });
 
         try
@@ -165,11 +252,10 @@ public class TextureFinderWindow : EditorWindow
                 string guid = guids[i];
                 string path = AssetDatabase.GUIDToAssetPath(guid);
 
-                // Display progress bar because it may lag when there are many files
-                if (i % 50 == 0) // Update UI every 50 to avoid slowdown due to too frequent refresh
+                if (i % 50 == 0)
                     EditorUtility.DisplayProgressBar("Scanning Textures", path, (float)i / guids.Length);
 
-                TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
 
                 if (importer != null)
                 {
@@ -178,21 +264,19 @@ public class TextureFinderWindow : EditorWindow
                     switch (currentFilter)
                     {
                         case FilterType.UsedCrunchCompression:
-                            // Check if Crunch compression is enabled
                             isMatch = importer.crunchedCompression;
                             break;
 
                         case FilterType.IsNormalMap:
-                            // Check if marked as a normal map
                             isMatch = importer.textureType == TextureImporterType.NormalMap;
                             break;
                     }
 
                     if (isMatch)
                     {
-                        Texture tex = AssetDatabase.LoadAssetAtPath<Texture>(path);
+                        var tex = AssetDatabase.LoadAssetAtPath<Texture>(path);
                         var relativePath = path.Replace(folderPath, ".");
-                        reportData.Add(new TextureResult { TextureObject = tex, Path = relativePath });
+                        reportData.Add(new TextureResult { TextureObject = tex, Path = relativePath, Importer = importer });
                     }
                 }
             }
@@ -201,5 +285,18 @@ public class TextureFinderWindow : EditorWindow
         {
             EditorUtility.ClearProgressBar();
         }
+    }
+
+    private void SelectAllResults()
+    {
+        if (reportData == null || reportData.Count == 0) return;
+
+        Object[] objectsToSelect = reportData
+            .Where(x => x.TextureObject != null)
+            .Select(x => x.TextureObject as Object)
+            .ToArray();
+
+        Selection.objects = objectsToSelect;
+        EditorUtility.FocusProjectWindow();
     }
 }
