@@ -4,6 +4,7 @@ using System.Text;
 using System;
 using UnityEditor;
 using UnityEngine;
+using Elypha.Common;
 
 namespace Elypha.UnityMaterialHelper
 {
