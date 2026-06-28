@@ -7,8 +7,8 @@ on:
       - "v*.*.*"
 
 env:
-  packageName: "com.elypha.vpm.material-helper"
-  pagesRepo: "Elypha/unity-helper"
+  packageName: "com.elypha.unity-material-helper"
+  pagesRepo: "Elypha/unity-packages"
 
 jobs:
   build-assets:

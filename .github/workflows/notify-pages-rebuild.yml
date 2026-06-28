@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  pagesRepo: "Elypha/unity-helper"
+  pagesRepo: "Elypha/unity-packages"
   targetEvent: "pages-rebuild"
 
 jobs:

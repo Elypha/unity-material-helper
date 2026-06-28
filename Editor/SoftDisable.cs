@@ -5,133 +5,135 @@ using System.Linq;
 using Elypha.Common;
 using Elypha.I18N;
 
-
-public class SoftDisableEditor : EditorWindow
+namespace Elypha.UnityMaterialHelper
 {
-    private Vector2 scrollPosition;
-
-    private AnimationClip targetClip;
-    private GameObject animatorRootObject;
-    private readonly List<GameObject> objectsToDisable = new() { null };
-
-    private bool showAdvancedSettings = false;
-    private static PluginLanguage language = PluginLanguage.English;
-    private readonly TemplateI18N i18n = new(language);
-    private readonly GuiMessage guiMessage = new();
-
-
-    [MenuItem("Elypha/Soft Disable")]
-    public static void ShowWindow()
+    public class SoftDisableEditor : EditorWindow
     {
-        var window = GetWindow<SoftDisableEditor>("Soft Disable");
-        window.minSize = new Vector2(300, 400);
-    }
+        private Vector2 scrollPosition;
 
-    private void OnGUI()
-    {
+        private AnimationClip targetClip;
+        private GameObject animatorRootObject;
+        private readonly List<GameObject> objectsToDisable = new() { null };
 
-        Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
-
-        Services.DrawTitle1(i18n.Localise("Settings"));
-
-        EditorGUILayout.LabelField("Target Animation Clip", EditorStyles.boldLabel);
-        targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
-        animatorRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", animatorRootObject, typeof(GameObject), true);
+        private bool showAdvancedSettings = false;
+        private static PluginLanguage language = PluginLanguage.English;
+        private readonly TemplateI18N i18n = new(language);
+        private readonly GuiMessage guiMessage = new();
 
 
-        EditorGUILayout.Space(8);
-        EditorGUILayout.LabelField("Skinned Mesh Renderers to disable", EditorStyles.boldLabel);
-
-        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-
-        DrawGameObjectList();
-
-        EditorGUILayout.EndScrollView();
-
-        Services.Separator(Color.grey, 1, 0, 4);
-
-        guiMessage.Draw(10, Repaint);
-
-
-        GUI.enabled = IsAllInputsValid();
-        GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
-        if (GUILayout.Button("Generate Disable Animation", GUILayout.Height(40)))
+        [MenuItem("Elypha/Soft Disable")]
+        public static void ShowWindow()
         {
-            ProcessAnimation();
+            var window = GetWindow<SoftDisableEditor>("Soft Disable");
+            window.minSize = new Vector2(300, 400);
         }
-        GUI.backgroundColor = Color.white;
-        GUI.enabled = true;
-    }
 
-    private void DrawGameObjectList()
-    {
-        for (int i = 0; i < objectsToDisable.Count; i++)
+        private void OnGUI()
         {
-            EditorGUI.BeginChangeCheck();
-            GameObject newObj = (GameObject)EditorGUILayout.ObjectField(objectsToDisable[i], typeof(GameObject), true);
 
-            if (EditorGUI.EndChangeCheck())
+            Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+
+            Services.DrawTitle1(i18n.Localise("Settings"));
+
+            EditorGUILayout.LabelField("Target Animation Clip", EditorStyles.boldLabel);
+            targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
+            animatorRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", animatorRootObject, typeof(GameObject), true);
+
+
+            EditorGUILayout.Space(8);
+            EditorGUILayout.LabelField("Skinned Mesh Renderers to disable", EditorStyles.boldLabel);
+
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+            DrawGameObjectList();
+
+            EditorGUILayout.EndScrollView();
+
+            Services.Separator(Color.grey, 1, 0, 4);
+
+            guiMessage.Draw(10, Repaint);
+
+
+            GUI.enabled = IsAllInputsValid();
+            GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
+            if (GUILayout.Button("Generate Disable Animation", GUILayout.Height(40)))
             {
-                if (newObj != null && newObj.GetComponent<SkinnedMeshRenderer>() == null)
+                ProcessAnimation();
+            }
+            GUI.backgroundColor = Color.white;
+            GUI.enabled = true;
+        }
+
+        private void DrawGameObjectList()
+        {
+            for (int i = 0; i < objectsToDisable.Count; i++)
+            {
+                EditorGUI.BeginChangeCheck();
+                GameObject newObj = (GameObject)EditorGUILayout.ObjectField(objectsToDisable[i], typeof(GameObject), true);
+
+                if (EditorGUI.EndChangeCheck())
                 {
-                    Debug.LogError($"错误: '{newObj.name}' 不包含 SkinnedMeshRenderer 组件，无法添加。");
+                    if (newObj != null && newObj.GetComponent<SkinnedMeshRenderer>() == null)
+                    {
+                        Debug.LogError($"错误: '{newObj.name}' 不包含 SkinnedMeshRenderer 组件，无法添加。");
+                    }
+                    else
+                    {
+                        objectsToDisable[i] = newObj;
+                    }
                 }
-                else
-                {
-                    objectsToDisable[i] = newObj;
-                }
+            }
+
+            if (objectsToDisable.Count == 0 || objectsToDisable[objectsToDisable.Count - 1] != null)
+            {
+                objectsToDisable.Add(null);
+                Repaint();
             }
         }
 
-        if (objectsToDisable.Count == 0 || objectsToDisable[objectsToDisable.Count - 1] != null)
+        private void ProcessAnimation()
         {
-            objectsToDisable.Add(null);
-            Repaint();
-        }
-    }
+            List<GameObject> validObjects = objectsToDisable.Where(obj => obj != null).ToList();
 
-    private void ProcessAnimation()
-    {
-        List<GameObject> validObjects = objectsToDisable.Where(obj => obj != null).ToList();
+            // Register the clip for an undo operation. This single call covers all subsequent modifications.
+            Undo.RecordObject(targetClip, "Generate Soft Disable Animation");
 
-        // Register the clip for an undo operation. This single call covers all subsequent modifications.
-        Undo.RecordObject(targetClip, "Generate Soft Disable Animation");
+            targetClip.ClearCurves();
 
-        targetClip.ClearCurves();
+            Transform rootTransform = animatorRootObject != null ? animatorRootObject.transform : null;
 
-        Transform rootTransform = animatorRootObject != null ? animatorRootObject.transform : null;
-
-        foreach (GameObject go in validObjects)
-        {
-            string path = AnimationUtility.CalculateTransformPath(go.transform, rootTransform);
-
-            EditorCurveBinding binding = new()
+            foreach (GameObject go in validObjects)
             {
-                path = path,
-                type = typeof(SkinnedMeshRenderer),
-                propertyName = "m_Enabled" // The internal property name for enabling/disabling a component.
-            };
+                string path = AnimationUtility.CalculateTransformPath(go.transform, rootTransform);
 
-            // We set tangents to create a "stepped" curve.
-            Keyframe key = new(time: 0f, value: 0f, inTangent: float.PositiveInfinity, outTangent: float.PositiveInfinity);
-            AnimationCurve curve = new(key);
+                EditorCurveBinding binding = new()
+                {
+                    path = path,
+                    type = typeof(SkinnedMeshRenderer),
+                    propertyName = "m_Enabled" // The internal property name for enabling/disabling a component.
+                };
 
-            // Note: For performance, it's better to build a list and call SetEditorCurves once,
-            // but for this tool, applying one by one is fine and conceptually simpler.
-            AnimationUtility.SetEditorCurve(targetClip, binding, curve);
+                // We set tangents to create a "stepped" curve.
+                Keyframe key = new(time: 0f, value: 0f, inTangent: float.PositiveInfinity, outTangent: float.PositiveInfinity);
+                AnimationCurve curve = new(key);
+
+                // Note: For performance, it's better to build a list and call SetEditorCurves once,
+                // but for this tool, applying one by one is fine and conceptually simpler.
+                AnimationUtility.SetEditorCurve(targetClip, binding, curve);
+            }
+
+            EditorUtility.SetDirty(targetClip);
+
+            // string successMessage = $"成功为 {} 个对象在动画剪辑 '{}' 中生成了禁用关键帧。";
+            string successMessage = $"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
+            guiMessage.Show(successMessage, 3);
+            Debug.Log(successMessage);
         }
 
-        EditorUtility.SetDirty(targetClip);
+        private bool IsAllInputsValid()
+        {
+            return targetClip != null && objectsToDisable.Any(obj => obj != null);
+        }
 
-        // string successMessage = $"成功为 {} 个对象在动画剪辑 '{}' 中生成了禁用关键帧。";
-        string successMessage = $"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
-        guiMessage.Show(successMessage, 3);
-        Debug.Log(successMessage);
     }
-
-    private bool IsAllInputsValid()
-    {
-        return targetClip != null && objectsToDisable.Any(obj => obj != null);
-    }
-
 }

@@ -4,120 +4,123 @@ using System.Collections.Generic;
 using System.Linq;
 using Elypha.Common;
 
-public class AnimationClipViewerWindow : EditorWindow
+namespace Elypha.UnityMaterialHelper
 {
-    private Vector2 scrollPosition;
-
-    private AnimationClip materialClip;
-    private bool showOnlyUniqueMaterials = false;
-    private readonly List<AnimatedPath> processedPaths = new();
-
-
-    [MenuItem("Elypha/Animation Clip Material Viewer")]
-    public static void ShowWindow()
+    public class AnimationClipViewerWindow : EditorWindow
     {
-        GetWindow<AnimationClipViewerWindow>("Clip Material Viewer");
-    }
+        private Vector2 scrollPosition;
 
-    private void OnGUI()
-    {
-        Services.DrawTitle1("Settings");
+        private AnimationClip materialClip;
+        private bool showOnlyUniqueMaterials = false;
+        private readonly List<AnimatedPath> processedPaths = new();
 
-        EditorGUILayout.LabelField("Animation Clip", EditorStyles.boldLabel);
 
-        var newClip = (AnimationClip)EditorGUILayout.ObjectField(materialClip, typeof(AnimationClip), false);
-        if (newClip != materialClip)
+        [MenuItem("Elypha/Animation Clip Material Viewer")]
+        public static void ShowWindow()
         {
-            materialClip = newClip;
-            ProcessAnimationClip();
-        }
-        if (materialClip == null)
-        {
-            EditorGUILayout.Space(10);
-            EditorGUILayout.HelpBox("Assign an Animation Clip to view its material data.", MessageType.Info);
-            return;
-        }
-        if (processedPaths.Count == 0)
-        {
-            EditorGUILayout.Space(10);
-            EditorGUILayout.HelpBox("This Clip does not appear to animate any materials.", MessageType.Info);
-            return;
-        }
-        EditorGUILayout.Space(5);
-        EditorGUI.BeginChangeCheck();
-        showOnlyUniqueMaterials = GUILayout.Toggle(showOnlyUniqueMaterials, "Show Only Unique Materials");
-        if (EditorGUI.EndChangeCheck())
-        {
-            Repaint();
+            GetWindow<AnimationClipViewerWindow>("Clip Material Viewer");
         }
 
-        Services.DrawTitle1("Material List");
-
-        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-        DrawMaterialList();
-        EditorGUILayout.EndScrollView();
-    }
-
-    private void DrawMaterialList()
-    {
-        foreach (var animatedPath in processedPaths)
+        private void OnGUI()
         {
-            EditorGUILayout.LabelField(animatedPath.Path, EditorStyles.boldLabel);
+            Services.DrawTitle1("Settings");
 
-            EditorGUI.indentLevel++;
-            var materialsToShow = showOnlyUniqueMaterials ? animatedPath.UniqueMaterials : animatedPath.AllMaterials;
-            foreach (var material in materialsToShow)
+            EditorGUILayout.LabelField("Animation Clip", EditorStyles.boldLabel);
+
+            var newClip = (AnimationClip)EditorGUILayout.ObjectField(materialClip, typeof(AnimationClip), false);
+            if (newClip != materialClip)
             {
-                EditorGUILayout.ObjectField(material, typeof(Material), false);
+                materialClip = newClip;
+                ProcessAnimationClip();
             }
-            EditorGUI.indentLevel--;
-
-            EditorGUILayout.Space(5);
-        }
-    }
-
-    private void ProcessAnimationClip()
-    {
-        processedPaths.Clear();
-
-        if (materialClip == null)
-        {
-            Repaint();
-            return;
-        }
-
-        EditorCurveBinding[] bindings = AnimationUtility.GetObjectReferenceCurveBindings(materialClip);
-
-        foreach (var binding in bindings)
-        {
-            if (binding.propertyName.StartsWith("m_Materials"))
+            if (materialClip == null)
             {
-                ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(materialClip, binding);
+                EditorGUILayout.Space(10);
+                EditorGUILayout.HelpBox("Assign an Animation Clip to view its material data.", MessageType.Info);
+                return;
+            }
+            if (processedPaths.Count == 0)
+            {
+                EditorGUILayout.Space(10);
+                EditorGUILayout.HelpBox("This Clip does not appear to animate any materials.", MessageType.Info);
+                return;
+            }
+            EditorGUILayout.Space(5);
+            EditorGUI.BeginChangeCheck();
+            showOnlyUniqueMaterials = GUILayout.Toggle(showOnlyUniqueMaterials, "Show Only Unique Materials");
+            if (EditorGUI.EndChangeCheck())
+            {
+                Repaint();
+            }
 
-                var materials = keyframes
-                    .Select(k => k.value as Material)
-                    .Where(m => m != null)
-                    .ToList();
+            Services.DrawTitle1("Material List");
 
-                if (materials.Any())
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            DrawMaterialList();
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawMaterialList()
+        {
+            foreach (var animatedPath in processedPaths)
+            {
+                EditorGUILayout.LabelField(animatedPath.Path, EditorStyles.boldLabel);
+
+                EditorGUI.indentLevel++;
+                var materialsToShow = showOnlyUniqueMaterials ? animatedPath.UniqueMaterials : animatedPath.AllMaterials;
+                foreach (var material in materialsToShow)
                 {
-                    processedPaths.Add(new AnimatedPath
+                    EditorGUILayout.ObjectField(material, typeof(Material), false);
+                }
+                EditorGUI.indentLevel--;
+
+                EditorGUILayout.Space(5);
+            }
+        }
+
+        private void ProcessAnimationClip()
+        {
+            processedPaths.Clear();
+
+            if (materialClip == null)
+            {
+                Repaint();
+                return;
+            }
+
+            EditorCurveBinding[] bindings = AnimationUtility.GetObjectReferenceCurveBindings(materialClip);
+
+            foreach (var binding in bindings)
+            {
+                if (binding.propertyName.StartsWith("m_Materials"))
+                {
+                    ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(materialClip, binding);
+
+                    var materials = keyframes
+                        .Select(k => k.value as Material)
+                        .Where(m => m != null)
+                        .ToList();
+
+                    if (materials.Any())
                     {
-                        Path = binding.path,
-                        AllMaterials = materials,
-                        UniqueMaterials = materials.Distinct().ToList()
-                    });
+                        processedPaths.Add(new AnimatedPath
+                        {
+                            Path = binding.path,
+                            AllMaterials = materials,
+                            UniqueMaterials = materials.Distinct().ToList()
+                        });
+                    }
                 }
             }
+
+            Repaint();
         }
 
-        Repaint();
-    }
-
-    private class AnimatedPath
-    {
-        public string Path;
-        public List<Material> AllMaterials;
-        public List<Material> UniqueMaterials;
+        private class AnimatedPath
+        {
+            public string Path;
+            public List<Material> AllMaterials;
+            public List<Material> UniqueMaterials;
+        }
     }
 }
