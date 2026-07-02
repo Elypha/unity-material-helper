@@ -174,7 +174,7 @@ namespace Elypha.UnityMaterialHelper
         public static bool TryGetElement<T>(T[] array, int index, out T result)
             where T : class
         {
-            if (index >= 0 && index < array.Length)
+            if (index >= 0 && index < array.Length && !EqualityComparer<T>.Default.Equals(array[index], null))
             {
                 result = array[index];
                 return true;
