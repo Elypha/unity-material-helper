@@ -9,16 +9,16 @@ namespace Elypha.UnityMaterialHelper
 {
     public class SoftDisableEditor : EditorWindow
     {
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
-        private AnimationClip targetClip;
-        private GameObject animatorRootObject;
-        private readonly List<GameObject> objectsToDisable = new() { null };
+        private AnimationClip _targetClip;
+        private GameObject _animatorRootObject;
+        private readonly List<GameObject> _objectsToDisable = new() { null };
 
-        private bool showAdvancedSettings = false;
-        private static PluginLanguage language = PluginLanguage.English;
-        private readonly TemplateI18N i18n = new(language);
-        private readonly GuiMessage guiMessage = new();
+        private bool _showAdvancedSettings = false;
+        private static PluginLanguage _language = PluginLanguage.English;
+        private readonly TemplateI18N _i18n = new(_language);
+        private readonly GuiMessage _guiMessage = new();
 
 
         [MenuItem("Elypha/Soft Disable")]
@@ -31,19 +31,19 @@ namespace Elypha.UnityMaterialHelper
         private void OnGUI()
         {
 
-            Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+            Services.DrawAdvancedSettings(ref _showAdvancedSettings, ref _language, _i18n);
 
-            Services.DrawTitle1(i18n.Localise("Settings"));
+            Services.DrawTitle1(_i18n.Localise("Settings"));
 
             EditorGUILayout.LabelField("Target Animation Clip", EditorStyles.boldLabel);
-            targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
-            animatorRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", animatorRootObject, typeof(GameObject), true);
+            _targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", _targetClip, typeof(AnimationClip), false);
+            _animatorRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", _animatorRootObject, typeof(GameObject), true);
 
 
             EditorGUILayout.Space(8);
             EditorGUILayout.LabelField("Skinned Mesh Renderers to disable", EditorStyles.boldLabel);
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
             DrawGameObjectList();
 
@@ -51,7 +51,7 @@ namespace Elypha.UnityMaterialHelper
 
             Services.Separator(Color.grey, 1, 0, 4);
 
-            guiMessage.Draw(10, Repaint);
+            _guiMessage.Draw(10, Repaint);
 
 
             GUI.enabled = IsAllInputsValid();
@@ -66,10 +66,10 @@ namespace Elypha.UnityMaterialHelper
 
         private void DrawGameObjectList()
         {
-            for (int i = 0; i < objectsToDisable.Count; i++)
+            for (int i = 0; i < _objectsToDisable.Count; i++)
             {
                 EditorGUI.BeginChangeCheck();
-                GameObject newObj = (GameObject)EditorGUILayout.ObjectField(objectsToDisable[i], typeof(GameObject), true);
+                GameObject newObj = (GameObject)EditorGUILayout.ObjectField(_objectsToDisable[i], typeof(GameObject), true);
 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -79,28 +79,28 @@ namespace Elypha.UnityMaterialHelper
                     }
                     else
                     {
-                        objectsToDisable[i] = newObj;
+                        _objectsToDisable[i] = newObj;
                     }
                 }
             }
 
-            if (objectsToDisable.Count == 0 || objectsToDisable[objectsToDisable.Count - 1] != null)
+            if (_objectsToDisable.Count == 0 || _objectsToDisable[_objectsToDisable.Count - 1] != null)
             {
-                objectsToDisable.Add(null);
+                _objectsToDisable.Add(null);
                 Repaint();
             }
         }
 
         private void ProcessAnimation()
         {
-            List<GameObject> validObjects = objectsToDisable.Where(obj => obj != null).ToList();
+            List<GameObject> validObjects = _objectsToDisable.Where(obj => obj != null).ToList();
 
             // Register the clip for an undo operation. This single call covers all subsequent modifications.
-            Undo.RecordObject(targetClip, "Generate Soft Disable Animation");
+            Undo.RecordObject(_targetClip, "Generate Soft Disable Animation");
 
-            targetClip.ClearCurves();
+            _targetClip.ClearCurves();
 
-            Transform rootTransform = animatorRootObject != null ? animatorRootObject.transform : null;
+            Transform rootTransform = _animatorRootObject != null ? _animatorRootObject.transform : null;
 
             foreach (GameObject go in validObjects)
             {
@@ -119,20 +119,20 @@ namespace Elypha.UnityMaterialHelper
 
                 // Note: For performance, it's better to build a list and call SetEditorCurves once,
                 // but for this tool, applying one by one is fine and conceptually simpler.
-                AnimationUtility.SetEditorCurve(targetClip, binding, curve);
+                AnimationUtility.SetEditorCurve(_targetClip, binding, curve);
             }
 
-            EditorUtility.SetDirty(targetClip);
+            EditorUtility.SetDirty(_targetClip);
 
             // string successMessage = $"成功为 {} 个对象在动画剪辑 '{}' 中生成了禁用关键帧。";
-            string successMessage = $"Done! {validObjects.Count} disabled in '{targetClip.name}'.";
-            guiMessage.Show(successMessage, 3);
+            string successMessage = $"Done! {validObjects.Count} disabled in '{_targetClip.name}'.";
+            _guiMessage.Show(successMessage, 3);
             Debug.Log(successMessage);
         }
 
         private bool IsAllInputsValid()
         {
-            return targetClip != null && objectsToDisable.Any(obj => obj != null);
+            return _targetClip != null && _objectsToDisable.Any(obj => obj != null);
         }
 
     }

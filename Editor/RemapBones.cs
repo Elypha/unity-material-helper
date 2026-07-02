@@ -17,18 +17,18 @@ namespace Elypha.UnityMaterialHelper
             window.minSize = new Vector2(500, 500);
         }
 
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
-        private SkinnedMeshRenderer renderer;
-        private Transform newRootBone;
-        private SkinnedMeshRenderer referenceRenderer;
-        private readonly Dictionary<string, Transform> boneDictionary = new();
-        private string result;
-        private GUIStyle monoStyle;
+        private SkinnedMeshRenderer _renderer;
+        private Transform _newRootBone;
+        private SkinnedMeshRenderer _referenceRenderer;
+        private readonly Dictionary<string, Transform> _boneDictionary = new();
+        private string _result;
+        private GUIStyle _monoStyle;
 
         private void OnEnable()
         {
-            monoStyle = new GUIStyle()
+            _monoStyle = new GUIStyle()
             {
                 font = EditorGUIUtility.Load("Fonts/RobotoMono/RobotoMono-Regular.ttf") as Font,
                 fontSize = 12,
@@ -41,29 +41,29 @@ namespace Elypha.UnityMaterialHelper
 
         private void OnGUI()
         {
-            renderer =
-                EditorGUILayout.ObjectField("Renderer", renderer, typeof(SkinnedMeshRenderer), true) as
+            _renderer =
+                EditorGUILayout.ObjectField("Renderer", _renderer, typeof(SkinnedMeshRenderer), true) as
                     SkinnedMeshRenderer;
-            newRootBone =
-                EditorGUILayout.ObjectField("New RootBone", newRootBone, typeof(Transform), true) as Transform;
-            referenceRenderer =
-                EditorGUILayout.ObjectField("Reference Renderer", referenceRenderer, typeof(SkinnedMeshRenderer), true)
+            _newRootBone =
+                EditorGUILayout.ObjectField("New RootBone", _newRootBone, typeof(Transform), true) as Transform;
+            _referenceRenderer =
+                EditorGUILayout.ObjectField("Reference Renderer", _referenceRenderer, typeof(SkinnedMeshRenderer), true)
                     as SkinnedMeshRenderer;
 
             if (GUILayout.Button("Analyse Renderer"))
             {
-                result = AnalyseSkinnedMeshRenderer();
+                _result = AnalyseSkinnedMeshRenderer();
             }
 
             if (GUILayout.Button("Update Bones from Reference"))
             {
-                result = UpdateSkinnedMeshRenderer();
+                _result = UpdateSkinnedMeshRenderer();
             }
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             try
             {
-                GUILayout.Label(result, monoStyle);
+                GUILayout.Label(_result, _monoStyle);
             }
             catch (Exception e)
             {
@@ -84,15 +84,15 @@ namespace Elypha.UnityMaterialHelper
             var countOk = 0;
             var countMismatch = 0;
             var countMissing = 0;
-            var largerLength = Math.Max(renderer.bones.Length, referenceRenderer.bones.Length);
+            var largerLength = Math.Max(_renderer.bones.Length, _referenceRenderer.bones.Length);
             for (int i = 0; i < largerLength; i++)
             {
                 sb.Append($"{i,4}  ");
-                TryGetElement(renderer.bones, i, out var bone);
+                TryGetElement(_renderer.bones, i, out var bone);
                 var boneName = bone ? bone.name : "null";
 
                 sb.Append($"{boneName,24}  ");
-                TryGetElement(referenceRenderer.bones, i, out var refBone);
+                TryGetElement(_referenceRenderer.bones, i, out var refBone);
                 var refBoneName = refBone ? refBone.name : "null";
                 sb.Append($"{refBoneName,24}  ");
 
@@ -118,15 +118,15 @@ namespace Elypha.UnityMaterialHelper
                 sb.Append("\n");
             }
 
-            if (renderer.bones.Length != referenceRenderer.bones.Length)
+            if (_renderer.bones.Length != _referenceRenderer.bones.Length)
             {
                 sb.AppendLine(
-                    $"ERROR: The number of bones in the renderer ({renderer.bones.Length}) does not match the reference renderer ({referenceRenderer.bones.Length}).");
+                    $"ERROR: The number of bones in the renderer ({_renderer.bones.Length}) does not match the reference renderer ({_referenceRenderer.bones.Length}).");
                 return sb.ToString();
             }
 
             sb.AppendLine($"\nSummary:");
-            sb.AppendLine($"Total    : {renderer.bones.Length}");
+            sb.AppendLine($"Total    : {_renderer.bones.Length}");
             sb.AppendLine($"OK       : {countOk}");
             sb.AppendLine($"Mismatch : {countMismatch}");
             sb.AppendLine($"Null     : {countMissing}\n");
@@ -134,21 +134,21 @@ namespace Elypha.UnityMaterialHelper
 
             // check new root bone
             // --------------------------------
-            var bonePathMap = referenceRenderer.bones
+            var bonePathMap = _referenceRenderer.bones
                 .Where(b => b != null)
                 .ToDictionary(b => b.name,
-                    b => b.gameObject.transform.GetRelativePath(referenceRenderer.rootBone.parent));
+                    b => b.gameObject.transform.GetRelativePath(_referenceRenderer.rootBone.parent));
             var newRootBoneMissingCount = 0;
             foreach (var bone in bonePathMap)
             {
-                var targetInNewRootBone = newRootBone.parent.Find(bone.Value);
+                var targetInNewRootBone = _newRootBone.parent.Find(bone.Value);
                 if (targetInNewRootBone == null)
                 {
                     sb.AppendLine($"{bone.Key} at '{bone.Value}' not found in the new Root Bone.");
                     newRootBoneMissingCount++;
                 }
 
-                boneDictionary[bone.Key] = targetInNewRootBone;
+                _boneDictionary[bone.Key] = targetInNewRootBone;
             }
 
             sb.AppendLine($"Total missing bones in new Root Bone: {newRootBoneMissingCount}\n");
@@ -159,14 +159,14 @@ namespace Elypha.UnityMaterialHelper
         private string UpdateSkinnedMeshRenderer()
         {
             var sb = new StringBuilder();
-            Transform[] newBones = boneDictionary.Values.ToArray();
+            Transform[] newBones = _boneDictionary.Values.ToArray();
 
-            renderer.bones = newBones;
-            renderer.rootBone = newRootBone;
-            sb.AppendLine($"Updated Bones in {renderer.name}:");
-            sb.AppendLine($"  - rootBone set to: {renderer.rootBone.transform.GetPath()}");
-            sb.AppendLine($"  - bones total: {renderer.bones.Length}");
-            sb.AppendLine($"  - bones missing: {renderer.bones.Count(b => b == null)}");
+            _renderer.bones = newBones;
+            _renderer.rootBone = _newRootBone;
+            sb.AppendLine($"Updated Bones in {_renderer.name}:");
+            sb.AppendLine($"  - rootBone set to: {_renderer.rootBone.transform.GetPath()}");
+            sb.AppendLine($"  - bones total: {_renderer.bones.Length}");
+            sb.AppendLine($"  - bones missing: {_renderer.bones.Count(b => b == null)}");
 
             return sb.ToString();
         }

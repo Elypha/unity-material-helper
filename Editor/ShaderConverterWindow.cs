@@ -27,16 +27,16 @@ namespace Elypha.UnityMaterialHelper
             window.minSize = new Vector2(500, 400);
         }
 
-        private Vector2 scrollPosition;
-        private bool isResizing = false;
+        private Vector2 _scrollPosition;
+        private bool _isResizing = false;
 
-        private float materialColumnWidth = 250f;
-        private const float countColumnWidth = 60f;
+        private float _materialColumnWidth = 250f;
+        private const float CountColumnWidth = 60f;
 
-        private GameObject targetObject;
-        private TargetShaderType targetType = TargetShaderType.Silent_Filamented;
+        private GameObject _targetObject;
+        private TargetShaderType _targetType = TargetShaderType.Silent_Filamented;
 
-        private List<MaterialResult> reportData = new List<MaterialResult>();
+        private List<MaterialResult> _reportData = new List<MaterialResult>();
 
         private void OnGUI()
         {
@@ -47,8 +47,8 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUI.BeginChangeCheck();
 
-            targetObject = (GameObject)EditorGUILayout.ObjectField("Target GameObject", targetObject, typeof(GameObject), true);
-            targetType = (TargetShaderType)EditorGUILayout.EnumPopup("Target Shader", targetType);
+            _targetObject = (GameObject)EditorGUILayout.ObjectField("Target GameObject", _targetObject, typeof(GameObject), true);
+            _targetType = (TargetShaderType)EditorGUILayout.EnumPopup("Target Shader", _targetType);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -69,7 +69,7 @@ namespace Elypha.UnityMaterialHelper
                 AnalyzeMaterials();
             }
 
-            EditorGUI.BeginDisabledGroup(reportData == null || reportData.Count == 0);
+            EditorGUI.BeginDisabledGroup(_reportData == null || _reportData.Count == 0);
 
             // 2. Replace Button
             if (GUILayout.Button("Replace All", GUILayout.Height(24)))
@@ -94,7 +94,7 @@ namespace Elypha.UnityMaterialHelper
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
             // 1. Material Asset Header (Resizable)
-            GUILayout.Label("Material Asset", GUILayout.Width(materialColumnWidth));
+            GUILayout.Label("Material Asset", GUILayout.Width(_materialColumnWidth));
 
             // Resize Handle logic
             Rect resizeRect = GUILayoutUtility.GetLastRect();
@@ -102,7 +102,7 @@ namespace Elypha.UnityMaterialHelper
             resizeRect.width = 5f;
 
             // 2. Usage Count Header
-            GUILayout.Label("Count", GUILayout.Width(countColumnWidth));
+            GUILayout.Label("Count", GUILayout.Width(CountColumnWidth));
 
             // 3. Current Shader Header
             GUILayout.Label("Current Shader");
@@ -113,21 +113,21 @@ namespace Elypha.UnityMaterialHelper
 
             // Report Content
             // --------------------------------
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            if (reportData != null && reportData.Count > 0)
+            if (_reportData != null && _reportData.Count > 0)
             {
-                foreach (var item in reportData)
+                foreach (var item in _reportData)
                 {
                     EditorGUILayout.BeginHorizontal("box");
 
                     // Col 1: Clickable Object
                     // -----------------------------
-                    EditorGUILayout.ObjectField(item.MaterialObject, typeof(Material), false, GUILayout.Width(materialColumnWidth));
+                    EditorGUILayout.ObjectField(item.MaterialObject, typeof(Material), false, GUILayout.Width(_materialColumnWidth));
 
                     // Col 2: Usage Count
                     // -----------------------------
-                    GUILayout.Label(item.UsageCount.ToString(), GUILayout.Width(countColumnWidth));
+                    GUILayout.Label(item.UsageCount.ToString(), GUILayout.Width(CountColumnWidth));
 
                     // Col 3: Shader Name
                     // -----------------------------
@@ -135,7 +135,7 @@ namespace Elypha.UnityMaterialHelper
                     GUIStyle labelStyle = EditorStyles.label;
                     if (item.CurrentShaderName == "Standard")
                         GUI.color = Color.yellow;
-                    else if (item.CurrentShaderName == GetShaderName(targetType))
+                    else if (item.CurrentShaderName == GetShaderName(_targetType))
                         GUI.color = Color.green;
 
                     GUILayout.Label(item.CurrentShaderName, labelStyle);
@@ -146,7 +146,7 @@ namespace Elypha.UnityMaterialHelper
             }
             else
             {
-                if (targetObject == null)
+                if (_targetObject == null)
                 {
                     EditorGUILayout.LabelField("Please drag a GameObject into the field above.");
                 }
@@ -164,10 +164,10 @@ namespace Elypha.UnityMaterialHelper
         // --------------------------------
         private void AnalyzeMaterials()
         {
-            reportData.Clear();
-            if (targetObject == null) return;
+            _reportData.Clear();
+            if (_targetObject == null) return;
 
-            Renderer[] renderers = targetObject.GetComponentsInChildren<Renderer>(true);
+            Renderer[] renderers = _targetObject.GetComponentsInChildren<Renderer>(true);
             Dictionary<Material, int> usageCountMap = new Dictionary<Material, int>();
 
             int total = renderers.Length;
@@ -195,7 +195,7 @@ namespace Elypha.UnityMaterialHelper
             // Convert Dictionary to List structure
             foreach (var kvp in usageCountMap)
             {
-                reportData.Add(new MaterialResult
+                _reportData.Add(new MaterialResult
                 {
                     MaterialObject = kvp.Key,
                     UsageCount = kvp.Value,
@@ -204,14 +204,14 @@ namespace Elypha.UnityMaterialHelper
             }
 
             // Sort by: Is Standard Shader (desc), Material Name (asc)
-            reportData = reportData.OrderByDescending(x => x.CurrentShaderName == "Standard").ThenBy(x => x.MaterialObject.name).ToList();
+            _reportData = _reportData.OrderByDescending(x => x.CurrentShaderName == "Standard").ThenBy(x => x.MaterialObject.name).ToList();
         }
 
         private void ReplaceShaders()
         {
-            if (targetObject == null || reportData.Count == 0) return;
+            if (_targetObject == null || _reportData.Count == 0) return;
 
-            string shaderName = GetShaderName(targetType);
+            string shaderName = GetShaderName(_targetType);
             Shader newShader = Shader.Find(shaderName);
 
             if (newShader == null)
@@ -224,7 +224,7 @@ namespace Elypha.UnityMaterialHelper
             int undoGroupIndex = Undo.GetCurrentGroup();
             int changedCount = 0;
 
-            foreach (var item in reportData)
+            foreach (var item in _reportData)
             {
                 Material mat = item.MaterialObject;
                 // Replace only if the shader name is different (to avoid redundant operations)
@@ -244,15 +244,15 @@ namespace Elypha.UnityMaterialHelper
 
         private void EnableVRCLV()
         {
-            if (targetObject == null || reportData.Count == 0) return;
+            if (_targetObject == null || _reportData.Count == 0) return;
 
-            string targetShader = GetShaderName(targetType);
+            string targetShader = GetShaderName(_targetType);
 
             Undo.IncrementCurrentGroup();
             int undoGroupIndex = Undo.GetCurrentGroup();
             int changedCount = 0;
 
-            foreach (var item in reportData)
+            foreach (var item in _reportData)
             {
                 Material mat = item.MaterialObject;
                 // Ensure only materials with the target shader are modified
@@ -292,19 +292,19 @@ namespace Elypha.UnityMaterialHelper
 
             if (Event.current.type == EventType.MouseDown && resizeRect.Contains(Event.current.mousePosition))
             {
-                isResizing = true;
+                _isResizing = true;
             }
 
-            if (isResizing)
+            if (_isResizing)
             {
-                materialColumnWidth = Event.current.mousePosition.x;
-                materialColumnWidth = Mathf.Clamp(materialColumnWidth, 100f, position.width - 150f);
+                _materialColumnWidth = Event.current.mousePosition.x;
+                _materialColumnWidth = Mathf.Clamp(_materialColumnWidth, 100f, position.width - 150f);
                 Repaint();
             }
 
             if (Event.current.type == EventType.MouseUp)
             {
-                isResizing = false;
+                _isResizing = false;
             }
         }
     }

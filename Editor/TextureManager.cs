@@ -9,15 +9,15 @@ namespace Elypha.UnityMaterialHelper
 {
     public class TextureManager : EditorWindow
     {
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
-        private DefaultAsset searchFolder;
-        private Dictionary<string, List<TextureInfo>> texturesByFolder = new();
-        private readonly HashSet<Texture> referencedTextures = new();
-        private static readonly string[] validOverridePlatforms = { "Standalone", "Android", "iPhone" };
-        private static readonly string defaultOverridePlatform = "Standalone";
+        private DefaultAsset _searchFolder;
+        private Dictionary<string, List<TextureInfo>> _texturesByFolder = new();
+        private readonly HashSet<Texture> _referencedTextures = new();
+        private static readonly string[] ValidOverridePlatforms = { "Standalone", "Android", "iPhone" };
+        private static readonly string DefaultOverridePlatform = "Standalone";
 
-        private readonly GUILayoutOption[] textureLabelOptions = new GUILayoutOption[]
+        private readonly GUILayoutOption[] _textureLabelOptions = new GUILayoutOption[]
         {
             GUILayout.Width(200),
             GUILayout.ExpandWidth(true),
@@ -43,25 +43,25 @@ namespace Elypha.UnityMaterialHelper
 
         private void OnGUI()
         {
-            searchFolder = (DefaultAsset)EditorGUILayout.ObjectField("Search Folder", searchFolder, typeof(DefaultAsset), false);
+            _searchFolder = (DefaultAsset)EditorGUILayout.ObjectField("Search Folder", _searchFolder, typeof(DefaultAsset), false);
             Services.Separator();
 
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            if (texturesByFolder.Count > 0)
+            if (_texturesByFolder.Count > 0)
             {
-                foreach (var folderEntry in texturesByFolder)
+                foreach (var folderEntry in _texturesByFolder)
                 {
                     EditorGUILayout.LabelField(
-                        Path.GetRelativePath(AssetDatabase.GetAssetPath(searchFolder), folderEntry.Key),
+                        Path.GetRelativePath(AssetDatabase.GetAssetPath(_searchFolder), folderEntry.Key),
                         new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = Services.ColourTitle1 } }
                     );
                     EditorGUILayout.Space(2);
 
                     foreach (var texInfo in folderEntry.Value)
                     {
-                        bool isReferenced = referencedTextures.Contains(texInfo.Texture);
+                        bool isReferenced = _referencedTextures.Contains(texInfo.Texture);
                         Color originalBgColor = GUI.backgroundColor;
                         Color originalContentColor = GUI.contentColor;
 
@@ -74,7 +74,7 @@ namespace Elypha.UnityMaterialHelper
                             GUI.contentColor = new Color(0.6f, 0.8f, 1f);
 
                         string infoLabel = $"{texInfo.NativeWidth,4}  {texInfo.ConfiguredWidth,4}  {texInfo.CompressionQuality,3}_{texInfo.CompressionFormat} {(texInfo.IsCrunched ? "Crunched" : "")}";
-                        EditorGUILayout.LabelField(infoLabel, Utils.MonoStyle, textureLabelOptions);
+                        EditorGUILayout.LabelField(infoLabel, Utils.MonoStyle, _textureLabelOptions);
 
                         GUI.contentColor = originalContentColor;
 
@@ -106,15 +106,15 @@ namespace Elypha.UnityMaterialHelper
             GUI.enabled = true;
         }
 
-        private bool IsAllInputsValid() => searchFolder != null;
+        private bool IsAllInputsValid() => _searchFolder != null;
 
 
         private void FindAssetsAndTheirDetails()
         {
-            texturesByFolder.Clear();
-            referencedTextures.Clear();
+            _texturesByFolder.Clear();
+            _referencedTextures.Clear();
 
-            string folderPath = AssetDatabase.GetAssetPath(searchFolder);
+            string folderPath = AssetDatabase.GetAssetPath(_searchFolder);
             if (string.IsNullOrEmpty(folderPath)) return;
 
             string[] textureGuids = AssetDatabase.FindAssets("t:Texture", new[] { folderPath });
@@ -132,7 +132,7 @@ namespace Elypha.UnityMaterialHelper
                     Texture texture = material.GetTexture(propName);
                     if (texture == null) continue;
 
-                    referencedTextures.Add(texture);
+                    _referencedTextures.Add(texture);
                 }
             }
 
@@ -147,15 +147,15 @@ namespace Elypha.UnityMaterialHelper
                 var texInfo = GetTextureDetails(texture);
 
                 string directory = Path.GetDirectoryName(path).Replace("\\", "/");
-                if (!texturesByFolder.ContainsKey(directory))
-                    texturesByFolder[directory] = new List<TextureInfo>();
+                if (!_texturesByFolder.ContainsKey(directory))
+                    _texturesByFolder[directory] = new List<TextureInfo>();
 
-                texturesByFolder[directory].Add(texInfo);
+                _texturesByFolder[directory].Add(texInfo);
             }
 
-            referencedTextures.IntersectWith(allFoundTextures);
+            _referencedTextures.IntersectWith(allFoundTextures);
 
-            texturesByFolder = texturesByFolder.OrderBy(kvp => kvp.Key)
+            _texturesByFolder = _texturesByFolder.OrderBy(kvp => kvp.Key)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
@@ -178,9 +178,9 @@ namespace Elypha.UnityMaterialHelper
                 getSourceDimensions.Invoke(importer, args);
                 info.NativeWidth = (int)args[0];
 
-                info.HasPlatformOverrides = validOverridePlatforms.Any(platform => importer.GetPlatformTextureSettings(platform).overridden);
+                info.HasPlatformOverrides = ValidOverridePlatforms.Any(platform => importer.GetPlatformTextureSettings(platform).overridden);
 
-                var platformSettings = importer.GetPlatformTextureSettings(defaultOverridePlatform);
+                var platformSettings = importer.GetPlatformTextureSettings(DefaultOverridePlatform);
                 info.CompressionFormat = platformSettings.overridden ? platformSettings.format.ToString() : importer.textureCompression.ToString();
                 info.CompressionQuality = platformSettings.overridden ? platformSettings.compressionQuality.ToString() : importer.compressionQuality.ToString();
                 info.IsCrunched = platformSettings.crunchedCompression;

@@ -14,21 +14,21 @@ namespace Elypha.UnityMaterialHelper
             var window = GetWindow<ComponentsViewer>("Components Viewer");
             window.minSize = new Vector2(400, 400);
         }
-        private Vector2 scrollPosition;
-        private bool isResizing = false;
-        private float nameColumnWidth = 200f;  // Initial width of the name column
-        private GUIStyle componentTextStyle;
+        private Vector2 _scrollPosition;
+        private bool _isResizing = false;
+        private float _nameColumnWidth = 200f;  // Initial width of the name column
+        private GUIStyle _componentTextStyle;
 
 
-        private GameObject targetObject;
+        private GameObject _targetObject;
         // last object
-        private readonly Dictionary<GameObject, List<string>> reportData = new();
-        private bool ignoreSkinnedMeshRenderers = false;
+        private readonly Dictionary<GameObject, List<string>> _reportData = new();
+        private bool _ignoreSkinnedMeshRenderers = false;
 
 
         private void OnEnable()
         {
-            componentTextStyle = new(EditorStyles.label)
+            _componentTextStyle = new(EditorStyles.label)
             {
                 wordWrap = true,
                 richText = true
@@ -43,15 +43,15 @@ namespace Elypha.UnityMaterialHelper
             EditorGUIUtility.labelWidth = 200f;
 
             EditorGUI.BeginChangeCheck();
-            targetObject = (GameObject)EditorGUILayout.ObjectField("Target Object", targetObject, typeof(GameObject), true);
-            ignoreSkinnedMeshRenderers = EditorGUILayout.Toggle("Ignore Skinned Mesh Renderers", ignoreSkinnedMeshRenderers);
+            _targetObject = (GameObject)EditorGUILayout.ObjectField("Target Object", _targetObject, typeof(GameObject), true);
+            _ignoreSkinnedMeshRenderers = EditorGUILayout.Toggle("Ignore Skinned Mesh Renderers", _ignoreSkinnedMeshRenderers);
             if (EditorGUI.EndChangeCheck())
             {
-                reportData.Clear();
+                _reportData.Clear();
 
-                if (targetObject != null)
+                if (_targetObject != null)
                 {
-                    AnalyseExistingComponents(targetObject);
+                    AnalyseExistingComponents(_targetObject);
                 }
             }
 
@@ -63,7 +63,7 @@ namespace Elypha.UnityMaterialHelper
             // Report
             // --------------------------------
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            GUILayout.Label("Object", GUILayout.Width(nameColumnWidth));
+            GUILayout.Label("Object", GUILayout.Width(_nameColumnWidth));
             // Draw resize handle area
             Rect resizeRect = GUILayoutUtility.GetLastRect();
             resizeRect.x += resizeRect.width;
@@ -77,16 +77,16 @@ namespace Elypha.UnityMaterialHelper
 
             // Report Content
             // --------------------------------
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            if (reportData != null && reportData.Count > 0)
+            if (_reportData != null && _reportData.Count > 0)
             {
-                foreach (var kvp in reportData)
+                foreach (var kvp in _reportData)
                 {
                     EditorGUILayout.BeginHorizontal("box"); // use box style for better separation
 
                     // GUILayout.Width(nameColumnWidth) enables width control
-                    EditorGUILayout.ObjectField(kvp.Key, typeof(GameObject), true, GUILayout.Width(nameColumnWidth));
+                    EditorGUILayout.ObjectField(kvp.Key, typeof(GameObject), true, GUILayout.Width(_nameColumnWidth));
 
                     GUILayout.Space(10);
 
@@ -95,14 +95,14 @@ namespace Elypha.UnityMaterialHelper
                     // replace 'ModularAvatar' with 'MA_' for brevity
                     componentsString = componentsString.Replace("ModularAvatar", "MA_");
 
-                    EditorGUILayout.LabelField(componentsString, componentTextStyle);
+                    EditorGUILayout.LabelField(componentsString, _componentTextStyle);
 
                     EditorGUILayout.EndHorizontal();
                 }
             }
             else
             {
-                if (targetObject == null)
+                if (_targetObject == null)
                 {
                     EditorGUILayout.HelpBox("Please select a Target Object to analyze.", MessageType.Info);
                 }
@@ -122,19 +122,19 @@ namespace Elypha.UnityMaterialHelper
 
             if (Event.current.type == EventType.MouseDown && resizeRect.Contains(Event.current.mousePosition))
             {
-                isResizing = true;
+                _isResizing = true;
             }
 
-            if (isResizing)
+            if (_isResizing)
             {
-                nameColumnWidth = Event.current.mousePosition.x;
-                nameColumnWidth = Mathf.Clamp(nameColumnWidth, 100f, position.width - 100f); // set min and max widths
+                _nameColumnWidth = Event.current.mousePosition.x;
+                _nameColumnWidth = Mathf.Clamp(_nameColumnWidth, 100f, position.width - 100f); // set min and max widths
                 Repaint(); // refresh the window to show changes
             }
 
             if (Event.current.type == EventType.MouseUp)
             {
-                isResizing = false;
+                _isResizing = false;
             }
         }
 
@@ -146,12 +146,12 @@ namespace Elypha.UnityMaterialHelper
                 var components = t.GetComponents<Component>();
                 var nonTransformComponents = components
                     .Where(c => c != null && c.GetType() != typeof(Transform))
-                    .Where(c => !(ignoreSkinnedMeshRenderers && c is SkinnedMeshRenderer))
+                    .Where(c => !(_ignoreSkinnedMeshRenderers && c is SkinnedMeshRenderer))
                     .ToList();
 
                 if (nonTransformComponents.Count > 0)
                 {
-                    reportData[t.gameObject] = nonTransformComponents.Select(c => c.GetType().Name).ToList();
+                    _reportData[t.gameObject] = nonTransformComponents.Select(c => c.GetType().Name).ToList();
                 }
             }
         }

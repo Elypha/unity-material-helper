@@ -10,10 +10,10 @@ namespace Elypha.UnityMaterialHelper
 {
     public class SdkBuildLogViewer : EditorWindow
     {
-        private Vector2 scrollPos;
+        private Vector2 _scrollPos;
 
-        public BuildReport buildReport = new();
-        private static readonly Color[] barColors = new Color[] {
+        public BuildReport SdkBuildReport = new();
+        private static readonly Color[] BarColors = new Color[] {
             new(0.27f, 0.51f, 0.93f), // blue
             new(0.93f, 0.43f, 0.27f), // orange
             new(0.53f, 0.73f, 0.33f), // green
@@ -34,18 +34,18 @@ namespace Elypha.UnityMaterialHelper
 
         void OnGUI()
         {
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
             GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
             if (GUILayout.Button("Analyse Last Build", GUILayout.Height(40)))
             {
-                buildReport = GetLastBuildReport();
+                SdkBuildReport = GetLastBuildReport();
             }
             GUI.backgroundColor = Color.white;
 
             EditorGUILayout.Space();
 
-            if (buildReport.isReady)
+            if (SdkBuildReport.isReady)
                 DrawBuildReport();
 
             EditorGUILayout.EndScrollView();
@@ -54,23 +54,23 @@ namespace Elypha.UnityMaterialHelper
 
         private void DrawBuildReport()
         {
-            if (buildReport.compressedSize != null && buildReport.UncompressedCategoryList.Count > 0)
+            if (SdkBuildReport.compressedSize != null && SdkBuildReport.UncompressedCategoryList.Count > 0)
             {
-                Services.LabelBoldColored($"Build Type: {buildReport.buildType}", Services.ColourTitle1);
+                Services.LabelBoldColored($"Build Type: {SdkBuildReport.buildType}", Services.ColourTitle1);
                 EditorGUI.indentLevel++;
-                EditorGUILayout.LabelField($"Size Compressed    {buildReport.compressedSize,8}", Utils.MonoStyle);
-                EditorGUILayout.LabelField($"Size Uncompressed  {buildReport.uncompressedSize ?? "Unknown",8}", Utils.MonoStyle);
+                EditorGUILayout.LabelField($"Size Compressed    {SdkBuildReport.compressedSize,8}", Utils.MonoStyle);
+                EditorGUILayout.LabelField($"Size Uncompressed  {SdkBuildReport.uncompressedSize ?? "Unknown",8}", Utils.MonoStyle);
                 EditorGUI.indentLevel--;
                 Services.LabelBoldColored("Uncompressed Build Size Breakdown:", Services.ColourTitle1);
 
-                var maxCategoryLengthInCharSafe = buildReport.UncompressedCategoryList.Select(c => c.category.Length).Max() + 2;
+                var maxCategoryLengthInCharSafe = SdkBuildReport.UncompressedCategoryList.Select(c => c.category.Length).Max() + 2;
                 var _contentForWidth = new GUIContent(new string(' ', maxCategoryLengthInCharSafe + 2 + 8 + 2 + 7));
                 var _labelWidthSafe = Utils.MonoStyle.CalcSize(_contentForWidth).x + 26;
 
                 var accumulatedPercent = 0f;
                 var colorIndex = 0;
                 EditorGUI.indentLevel++;
-                foreach (var category in buildReport.UncompressedCategoryList)
+                foreach (var category in SdkBuildReport.UncompressedCategoryList)
                 {
                     EditorGUILayout.BeginHorizontal();
 
@@ -89,7 +89,7 @@ namespace Elypha.UnityMaterialHelper
                         var startX = lineRect.x + lineRect.width * accumulatedPercent;
                         var segmentWidth = lineRect.width * currentPercent;
                         var segmentRect = new Rect(startX, lineRect.y, segmentWidth, lineRect.height);
-                        EditorGUI.DrawRect(segmentRect, barColors[colorIndex % barColors.Length]);
+                        EditorGUI.DrawRect(segmentRect, BarColors[colorIndex % BarColors.Length]);
 
                         accumulatedPercent += currentPercent;
                         colorIndex++;
@@ -100,7 +100,7 @@ namespace Elypha.UnityMaterialHelper
                 EditorGUI.indentLevel--;
             }
 
-            if (buildReport.buildAssetList.Count > 0)
+            if (SdkBuildReport.buildAssetList.Count > 0)
             {
                 Services.LabelBoldColored("Assets and Files from the Resources Folder:", Services.ColourTitle1);
 
@@ -111,7 +111,7 @@ namespace Elypha.UnityMaterialHelper
                 EditorGUILayout.LabelField("Locate", EditorStyles.toolbarButton, GUILayout.Width(50));
                 EditorGUILayout.EndHorizontal();
 
-                foreach (BuildAsset buildAsset in buildReport.buildAssetList)
+                foreach (BuildAsset buildAsset in SdkBuildReport.buildAssetList)
                 {
                     var isAssetPath = buildAsset.path.StartsWith("Assets/");
                     var isSelectable = buildAsset.path.StartsWith("Assets/") || buildAsset.path.StartsWith("Packages/");

@@ -9,11 +9,11 @@ namespace Elypha.UnityMaterialHelper
 {
     public class BatchPackageImporter : EditorWindow
     {
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
 
-        private List<string> validPaths = new();
-        private List<string> acceptedPaths = new();
+        private List<string> _validPaths = new();
+        private List<string> _acceptedPaths = new();
 
         [MenuItem("Elypha/Editor/Batch Package Importer", false, 0)]
         public static void ShowWindow()
@@ -32,15 +32,15 @@ namespace Elypha.UnityMaterialHelper
                 switch (currentEvent.type)
                 {
                     case EventType.DragUpdated:
-                        validPaths.Clear();
+                        _validPaths.Clear();
                         foreach (string path in DragAndDrop.paths)
                         {
                             if (Path.GetExtension(path).ToLower() == ".unitypackage")
                             {
-                                validPaths.Add(path);
+                                _validPaths.Add(path);
                             }
                         }
-                        DragAndDrop.visualMode = validPaths.Any() ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
+                        DragAndDrop.visualMode = _validPaths.Any() ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Rejected;
 
                         // Mark the event as used to prevent further processing
                         currentEvent.Use();
@@ -49,7 +49,7 @@ namespace Elypha.UnityMaterialHelper
                     case EventType.DragPerform:
                         DragAndDrop.AcceptDrag();
 
-                        acceptedPaths = DragAndDrop.paths
+                        _acceptedPaths = DragAndDrop.paths
                             .Where(path => Path.GetExtension(path).ToLower() == ".unitypackage")
                             .ToList();
 
@@ -59,7 +59,7 @@ namespace Elypha.UnityMaterialHelper
             }
 
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
             DrawPackageList();
 
@@ -73,7 +73,7 @@ namespace Elypha.UnityMaterialHelper
             {
                 try
                 {
-                    ImportPackages(acceptedPaths);
+                    ImportPackages(_acceptedPaths);
                 }
                 finally
                 {
@@ -86,8 +86,8 @@ namespace Elypha.UnityMaterialHelper
 
         private void DrawPackageList()
         {
-            Services.LabelBoldColored($"Found {acceptedPaths.Count} packages.", Services.ColourTitle2);
-            foreach (string path in GetPathSimpleNames(acceptedPaths))
+            Services.LabelBoldColored($"Found {_acceptedPaths.Count} packages.", Services.ColourTitle2);
+            foreach (string path in GetPathSimpleNames(_acceptedPaths))
             {
                 EditorGUILayout.LabelField($"・ {path}");
             }
@@ -120,7 +120,7 @@ namespace Elypha.UnityMaterialHelper
 
         private bool IsAllInputsValid()
         {
-            return acceptedPaths.Any();
+            return _acceptedPaths.Any();
         }
     }
 }

@@ -8,11 +8,11 @@ namespace Elypha.UnityMaterialHelper
 {
     public class AnimationClipViewerWindow : EditorWindow
     {
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
-        private AnimationClip materialClip;
-        private bool showOnlyUniqueMaterials = false;
-        private readonly List<AnimatedPath> processedPaths = new();
+        private AnimationClip _materialClip;
+        private bool _showOnlyUniqueMaterials = false;
+        private readonly List<AnimatedPath> _processedPaths = new();
 
 
         [MenuItem("Elypha/Animation Clip Material Viewer")]
@@ -27,19 +27,19 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.LabelField("Animation Clip", EditorStyles.boldLabel);
 
-            var newClip = (AnimationClip)EditorGUILayout.ObjectField(materialClip, typeof(AnimationClip), false);
-            if (newClip != materialClip)
+            var newClip = (AnimationClip)EditorGUILayout.ObjectField(_materialClip, typeof(AnimationClip), false);
+            if (newClip != _materialClip)
             {
-                materialClip = newClip;
+                _materialClip = newClip;
                 ProcessAnimationClip();
             }
-            if (materialClip == null)
+            if (_materialClip == null)
             {
                 EditorGUILayout.Space(10);
                 EditorGUILayout.HelpBox("Assign an Animation Clip to view its material data.", MessageType.Info);
                 return;
             }
-            if (processedPaths.Count == 0)
+            if (_processedPaths.Count == 0)
             {
                 EditorGUILayout.Space(10);
                 EditorGUILayout.HelpBox("This Clip does not appear to animate any materials.", MessageType.Info);
@@ -47,7 +47,7 @@ namespace Elypha.UnityMaterialHelper
             }
             EditorGUILayout.Space(5);
             EditorGUI.BeginChangeCheck();
-            showOnlyUniqueMaterials = GUILayout.Toggle(showOnlyUniqueMaterials, "Show Only Unique Materials");
+            _showOnlyUniqueMaterials = GUILayout.Toggle(_showOnlyUniqueMaterials, "Show Only Unique Materials");
             if (EditorGUI.EndChangeCheck())
             {
                 Repaint();
@@ -55,19 +55,19 @@ namespace Elypha.UnityMaterialHelper
 
             Services.DrawTitle1("Material List");
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             DrawMaterialList();
             EditorGUILayout.EndScrollView();
         }
 
         private void DrawMaterialList()
         {
-            foreach (var animatedPath in processedPaths)
+            foreach (var animatedPath in _processedPaths)
             {
                 EditorGUILayout.LabelField(animatedPath.Path, EditorStyles.boldLabel);
 
                 EditorGUI.indentLevel++;
-                var materialsToShow = showOnlyUniqueMaterials ? animatedPath.UniqueMaterials : animatedPath.AllMaterials;
+                var materialsToShow = _showOnlyUniqueMaterials ? animatedPath.UniqueMaterials : animatedPath.AllMaterials;
                 foreach (var material in materialsToShow)
                 {
                     EditorGUILayout.ObjectField(material, typeof(Material), false);
@@ -80,21 +80,21 @@ namespace Elypha.UnityMaterialHelper
 
         private void ProcessAnimationClip()
         {
-            processedPaths.Clear();
+            _processedPaths.Clear();
 
-            if (materialClip == null)
+            if (_materialClip == null)
             {
                 Repaint();
                 return;
             }
 
-            EditorCurveBinding[] bindings = AnimationUtility.GetObjectReferenceCurveBindings(materialClip);
+            EditorCurveBinding[] bindings = AnimationUtility.GetObjectReferenceCurveBindings(_materialClip);
 
             foreach (var binding in bindings)
             {
                 if (binding.propertyName.StartsWith("m_Materials"))
                 {
-                    ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(materialClip, binding);
+                    ObjectReferenceKeyframe[] keyframes = AnimationUtility.GetObjectReferenceCurve(_materialClip, binding);
 
                     var materials = keyframes
                         .Select(k => k.value as Material)
@@ -103,7 +103,7 @@ namespace Elypha.UnityMaterialHelper
 
                     if (materials.Any())
                     {
-                        processedPaths.Add(new AnimatedPath
+                        _processedPaths.Add(new AnimatedPath
                         {
                             Path = binding.path,
                             AllMaterials = materials,

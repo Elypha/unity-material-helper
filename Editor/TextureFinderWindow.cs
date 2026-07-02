@@ -29,20 +29,20 @@ namespace Elypha.UnityMaterialHelper
             window.minSize = new Vector2(500, 400);
         }
 
-        private Vector2 scrollPosition;
-        private bool isResizing = false;
-        private float nameColumnWidth = 200f;
-        private const float actionColumnWidth = 60f;
-        private GUIStyle pathTextStyle;
+        private Vector2 _scrollPosition;
+        private bool _isResizing = false;
+        private float _nameColumnWidth = 200f;
+        private const float ActionColumnWidth = 60f;
+        private GUIStyle _pathTextStyle;
 
-        private DefaultAsset targetFolder;
-        private FilterType currentFilter = FilterType.UsedCrunchCompression;
+        private DefaultAsset _targetFolder;
+        private FilterType _currentFilter = FilterType.UsedCrunchCompression;
 
-        private List<TextureResult> reportData = new List<TextureResult>();
+        private readonly List<TextureResult> _reportData = new();
 
         private void OnEnable()
         {
-            pathTextStyle = new GUIStyle(EditorStyles.label)
+            _pathTextStyle = new GUIStyle(EditorStyles.label)
             {
                 wordWrap = false,
                 richText = true,
@@ -59,8 +59,8 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUI.BeginChangeCheck();
 
-            targetFolder = (DefaultAsset)EditorGUILayout.ObjectField("Target Folder", targetFolder, typeof(DefaultAsset), false);
-            currentFilter = (FilterType)EditorGUILayout.EnumPopup("Filter", currentFilter);
+            _targetFolder = (DefaultAsset)EditorGUILayout.ObjectField("Target Folder", _targetFolder, typeof(DefaultAsset), false);
+            _currentFilter = (FilterType)EditorGUILayout.EnumPopup("Filter", _currentFilter);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -81,7 +81,7 @@ namespace Elypha.UnityMaterialHelper
                 AnalyzeTextures();
             }
 
-            EditorGUI.BeginDisabledGroup(reportData == null || reportData.Count == 0);
+            EditorGUI.BeginDisabledGroup(_reportData == null || _reportData.Count == 0);
             if (GUILayout.Button("Select All", GUILayout.Height(24)))
             {
                 SelectAllResults();
@@ -97,10 +97,10 @@ namespace Elypha.UnityMaterialHelper
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
             // 1. Action Header
-            GUILayout.Label("Action", GUILayout.Width(actionColumnWidth));
+            GUILayout.Label("Action", GUILayout.Width(ActionColumnWidth));
 
             // 2. Texture Asset Header
-            GUILayout.Label("Texture Asset", GUILayout.Width(nameColumnWidth));
+            GUILayout.Label("Texture Asset", GUILayout.Width(_nameColumnWidth));
 
             // Resize Handle
             Rect resizeRect = GUILayoutUtility.GetLastRect();
@@ -115,18 +115,18 @@ namespace Elypha.UnityMaterialHelper
 
             // Report Content
             // --------------------------------
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
-            if (reportData != null && reportData.Count > 0)
+            if (_reportData != null && _reportData.Count > 0)
             {
-                foreach (var item in reportData)
+                foreach (var item in _reportData)
                 {
                     EditorGUILayout.BeginHorizontal("box");
 
                     // Col 1: Action (Button or None)
                     // -----------------------------
-                    GUILayout.BeginVertical(GUILayout.Width(actionColumnWidth));
-                    if (currentFilter == FilterType.IsNormalMap)
+                    GUILayout.BeginVertical(GUILayout.Width(ActionColumnWidth));
+                    if (_currentFilter == FilterType.IsNormalMap)
                     {
                         bool isEligible = IsEligibleForBC5(item.Importer);
 
@@ -145,26 +145,26 @@ namespace Elypha.UnityMaterialHelper
 
                     // Col 2: Clickable Object
                     // -----------------------------
-                    EditorGUILayout.ObjectField(item.TextureObject, typeof(Texture), false, GUILayout.Width(nameColumnWidth));
+                    EditorGUILayout.ObjectField(item.TextureObject, typeof(Texture), false, GUILayout.Width(_nameColumnWidth));
 
                     GUILayout.Space(10);
 
                     // Col 3: Path text
                     // -----------------------------
-                    EditorGUILayout.LabelField(item.Path, pathTextStyle);
+                    EditorGUILayout.LabelField(item.Path, _pathTextStyle);
 
                     EditorGUILayout.EndHorizontal();
                 }
             }
             else
             {
-                if (targetFolder == null)
+                if (_targetFolder == null)
                 {
                     EditorGUILayout.LabelField("Please select a Target Folder to analyze.");
                 }
                 else
                 {
-                    EditorGUILayout.LabelField($"No textures found matching criteria: {currentFilter}");
+                    EditorGUILayout.LabelField($"No textures found matching criteria: {_currentFilter}");
                 }
             }
 
@@ -215,29 +215,29 @@ namespace Elypha.UnityMaterialHelper
 
             if (Event.current.type == EventType.MouseDown && resizeRect.Contains(Event.current.mousePosition))
             {
-                isResizing = true;
+                _isResizing = true;
             }
 
-            if (isResizing)
+            if (_isResizing)
             {
-                nameColumnWidth = Event.current.mousePosition.x - actionColumnWidth; // 减去第一列的宽度
-                nameColumnWidth = Mathf.Clamp(nameColumnWidth, 100f, position.width - 100f - actionColumnWidth);
+                _nameColumnWidth = Event.current.mousePosition.x - ActionColumnWidth; // 减去第一列的宽度
+                _nameColumnWidth = Mathf.Clamp(_nameColumnWidth, 100f, position.width - 100f - ActionColumnWidth);
                 Repaint();
             }
 
             if (Event.current.type == EventType.MouseUp)
             {
-                isResizing = false;
+                _isResizing = false;
             }
         }
 
         private void AnalyzeTextures()
         {
-            reportData.Clear();
+            _reportData.Clear();
 
-            if (targetFolder == null) return;
+            if (_targetFolder == null) return;
 
-            string folderPath = AssetDatabase.GetAssetPath(targetFolder);
+            string folderPath = AssetDatabase.GetAssetPath(_targetFolder);
 
             if (!Directory.Exists(folderPath))
             {
@@ -263,7 +263,7 @@ namespace Elypha.UnityMaterialHelper
                     {
                         bool isMatch = false;
 
-                        switch (currentFilter)
+                        switch (_currentFilter)
                         {
                             case FilterType.UsedCrunchCompression:
                                 isMatch = importer.crunchedCompression;
@@ -278,7 +278,7 @@ namespace Elypha.UnityMaterialHelper
                         {
                             var tex = AssetDatabase.LoadAssetAtPath<Texture>(path);
                             var relativePath = path.Replace(folderPath, ".");
-                            reportData.Add(new TextureResult { TextureObject = tex, Path = relativePath, Importer = importer });
+                            _reportData.Add(new TextureResult { TextureObject = tex, Path = relativePath, Importer = importer });
                         }
                     }
                 }
@@ -291,9 +291,9 @@ namespace Elypha.UnityMaterialHelper
 
         private void SelectAllResults()
         {
-            if (reportData == null || reportData.Count == 0) return;
+            if (_reportData == null || _reportData.Count == 0) return;
 
-            Object[] objectsToSelect = reportData
+            Object[] objectsToSelect = _reportData
                 .Where(x => x.TextureObject != null)
                 .Select(x => x.TextureObject as Object)
                 .ToArray();

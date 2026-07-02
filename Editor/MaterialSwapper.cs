@@ -11,25 +11,25 @@ namespace Elypha.UnityMaterialHelper
     public class MaterialSwapper : EditorWindow
     {
         // functions
-        private Vector2 scrollPosition;
-        private readonly GuiMessage guiMessage = new();
+        private Vector2 _scrollPosition;
+        private readonly GuiMessage _guiMessage = new();
 
         // user settings
-        private GameObject outfitObject;
-        private bool isOverrideOutfitObjectName = false;
-        private string overrideOutfitObjectName = "";
-        private GameObject assumedRootObject;
-        private readonly List<Material> targetMaterials = new();
-        private ReorderableList targetMaterialsList;
-        private AnimationClip animationClip;
-        private int targetFrameNumber;
-        private int clipNextFrame;
+        private GameObject _outfitObject;
+        private bool _isOverrideOutfitObjectName = false;
+        private string _overrideOutfitObjectName = "";
+        private GameObject _assumedRootObject;
+        private readonly List<Material> _targetMaterials = new();
+        private ReorderableList _targetMaterialsList;
+        private AnimationClip _animationClip;
+        private int _targetFrameNumber;
+        private int _clipNextFrame;
 
         // data
         private int _lastOutfitObject = -1;
         private int _lastAnimationClip = -1;
-        private readonly Dictionary<GameObject, RendererConfig> rendererConfigs = new();
-        private readonly Dictionary<Material, MaterialConfig> materialConfigs = new();
+        private readonly Dictionary<GameObject, RendererConfig> _rendererConfigs = new();
+        private readonly Dictionary<Material, MaterialConfig> _materialConfigs = new();
 
 
         [MenuItem("Elypha/Material Swapper")]
@@ -41,19 +41,19 @@ namespace Elypha.UnityMaterialHelper
 
         private void OnEnable()
         {
-            targetMaterialsList = new ReorderableList(targetMaterials, typeof(Material), true, true, true, true)
+            _targetMaterialsList = new ReorderableList(_targetMaterials, typeof(Material), true, true, true, true)
             {
                 drawHeaderCallback = rect => { EditorGUI.LabelField(rect, "Target Materials"); },
                 drawElementCallback = (rect, index, isActive, isFocused) =>
                 {
-                    targetMaterials[index] = (Material)EditorGUI.ObjectField(rect, targetMaterials[index], typeof(Material), false);
+                    _targetMaterials[index] = (Material)EditorGUI.ObjectField(rect, _targetMaterials[index], typeof(Material), false);
                 }
             };
         }
 
         private void OnGUI()
         {
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, false, false, GUILayout.ExpandWidth(true));
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, false, false, GUILayout.ExpandWidth(true));
 
             Services.DrawTitle1("Settings");
             DrawSettings();
@@ -74,34 +74,34 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Outfit Object", labelStyle, GUILayout.Width(labelWidth));
-            outfitObject = (GameObject)EditorGUILayout.ObjectField(outfitObject, typeof(GameObject), true);
+            _outfitObject = (GameObject)EditorGUILayout.ObjectField(_outfitObject, typeof(GameObject), true);
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("┗ Override Object name", labelStyle, GUILayout.Width(labelWidth));
-            isOverrideOutfitObjectName = EditorGUILayout.Toggle(isOverrideOutfitObjectName, GUILayout.Width(16));
-            if (isOverrideOutfitObjectName)
+            _isOverrideOutfitObjectName = EditorGUILayout.Toggle(_isOverrideOutfitObjectName, GUILayout.Width(16));
+            if (_isOverrideOutfitObjectName)
             {
-                overrideOutfitObjectName = EditorGUILayout.TextField(overrideOutfitObjectName);
+                _overrideOutfitObjectName = EditorGUILayout.TextField(_overrideOutfitObjectName);
             }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Animation path relative to", labelStyle, GUILayout.Width(labelWidth));
-            assumedRootObject = (GameObject)EditorGUILayout.ObjectField(assumedRootObject, typeof(GameObject), true);
+            _assumedRootObject = (GameObject)EditorGUILayout.ObjectField(_assumedRootObject, typeof(GameObject), true);
             EditorGUILayout.EndHorizontal();
 
             // validation
-            var _currentOutfitObject = outfitObject == null ? -1 : outfitObject.GetInstanceID();
+            var _currentOutfitObject = _outfitObject == null ? -1 : _outfitObject.GetInstanceID();
             if (_lastOutfitObject != _currentOutfitObject)
             {
-                _lastOutfitObject = outfitObject.GetInstanceID();
+                _lastOutfitObject = _outfitObject.GetInstanceID();
                 LoadRenderers();
                 LoadMaterials();
                 // set relative to the parent of the outfit object, if not set
-                if (assumedRootObject == null && outfitObject != null && outfitObject.transform.parent != null)
+                if (_assumedRootObject == null && _outfitObject != null && _outfitObject.transform.parent != null)
                 {
-                    assumedRootObject = outfitObject.transform.parent.gameObject;
+                    _assumedRootObject = _outfitObject.transform.parent.gameObject;
                 }
             }
 
@@ -124,7 +124,7 @@ namespace Elypha.UnityMaterialHelper
             Services.LabelBoldColored("Renderers", Services.ColourBold);
             if (GUILayout.Button("All", GUILayout.Width(50)))
             {
-                foreach (var pair in rendererConfigs)
+                foreach (var pair in _rendererConfigs)
                 {
                     pair.Value.Enabled = true;
                 }
@@ -132,7 +132,7 @@ namespace Elypha.UnityMaterialHelper
             }
             if (GUILayout.Button("None", GUILayout.Width(50)))
             {
-                foreach (var pair in rendererConfigs)
+                foreach (var pair in _rendererConfigs)
                 {
                     pair.Value.Enabled = false;
                 }
@@ -140,19 +140,19 @@ namespace Elypha.UnityMaterialHelper
             }
             GUILayout.EndHorizontal();
 
-            if (rendererConfigs.Count > 0)
+            if (_rendererConfigs.Count > 0)
             {
-                foreach (GameObject go in rendererConfigs.Keys.OrderBy(go => go.name))
+                foreach (GameObject go in _rendererConfigs.Keys.OrderBy(go => go.name))
                 {
                     GUILayout.BeginHorizontal();
-                    var currentState = rendererConfigs[go].Enabled;
-                    rendererConfigs[go].Enabled = EditorGUILayout.Toggle(rendererConfigs[go].Enabled, GUILayout.Width(16));
-                    if (currentState != rendererConfigs[go].Enabled)
+                    var currentState = _rendererConfigs[go].Enabled;
+                    _rendererConfigs[go].Enabled = EditorGUILayout.Toggle(_rendererConfigs[go].Enabled, GUILayout.Width(16));
+                    if (currentState != _rendererConfigs[go].Enabled)
                     {
                         LoadMaterials();
                     }
                     Color originalColor = GUI.color;
-                    if (rendererConfigs[go].HasEnabledMaterial)
+                    if (_rendererConfigs[go].HasEnabledMaterial)
                     {
                         GUI.color = Color.cyan;
                     }
@@ -179,7 +179,7 @@ namespace Elypha.UnityMaterialHelper
             Services.LabelBoldColored("Materials", Services.ColourBold);
             if (GUILayout.Button("All", GUILayout.Width(50)))
             {
-                foreach (var pair in materialConfigs)
+                foreach (var pair in _materialConfigs)
                 {
                     pair.Value.Enabled = true;
                 }
@@ -187,7 +187,7 @@ namespace Elypha.UnityMaterialHelper
             }
             if (GUILayout.Button("None", GUILayout.Width(50)))
             {
-                foreach (var pair in materialConfigs)
+                foreach (var pair in _materialConfigs)
                 {
                     pair.Value.Enabled = false;
                 }
@@ -195,16 +195,16 @@ namespace Elypha.UnityMaterialHelper
             }
             GUILayout.EndHorizontal();
 
-            if (materialConfigs.Count > 0)
+            if (_materialConfigs.Count > 0)
             {
-                foreach (var pair in materialConfigs.OrderBy(pair => pair.Value.Excluded).ThenBy(pair => pair.Key.name))
+                foreach (var pair in _materialConfigs.OrderBy(pair => pair.Value.Excluded).ThenBy(pair => pair.Key.name))
                 {
                     var mat = pair.Key;
                     if (pair.Value.Excluded) GUI.enabled = false;
                     GUILayout.BeginHorizontal();
-                    var currentState = materialConfigs[mat].Enabled;
-                    materialConfigs[mat].Enabled = EditorGUILayout.Toggle(materialConfigs[mat].Enabled, GUILayout.Width(16));
-                    if (currentState != materialConfigs[mat].Enabled)
+                    var currentState = _materialConfigs[mat].Enabled;
+                    _materialConfigs[mat].Enabled = EditorGUILayout.Toggle(_materialConfigs[mat].Enabled, GUILayout.Width(16));
+                    if (currentState != _materialConfigs[mat].Enabled)
                     {
                         UpdateRendererColour();
                     }
@@ -227,7 +227,7 @@ namespace Elypha.UnityMaterialHelper
 
             // Target Materials List
             GUILayout.BeginVertical(GUILayout.MaxWidth(maxWidth));
-            targetMaterialsList.DoLayoutList();
+            _targetMaterialsList.DoLayoutList();
 
             // Drag and drop area; clear button
             GUILayout.BeginHorizontal();
@@ -243,9 +243,9 @@ namespace Elypha.UnityMaterialHelper
                         DragAndDrop.AcceptDrag();
                         foreach (var obj in DragAndDrop.objectReferences)
                         {
-                            if (!targetMaterials.Contains(obj as Material))
+                            if (!_targetMaterials.Contains(obj as Material))
                             {
-                                targetMaterials.Add(obj as Material);
+                                _targetMaterials.Add(obj as Material);
                             }
                         }
                     }
@@ -254,7 +254,7 @@ namespace Elypha.UnityMaterialHelper
             }
             if (GUILayout.Button("↺", new GUILayoutOption[] { GUILayout.Width(28), GUILayout.Height(28) }))
             {
-                targetMaterials.Clear();
+                _targetMaterials.Clear();
             }
             GUILayout.EndHorizontal();
 
@@ -270,8 +270,8 @@ namespace Elypha.UnityMaterialHelper
 
             // Animation Clip
             GUILayout.BeginHorizontal();
-            animationClip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", animationClip, typeof(AnimationClip), false, Services.LayoutExpanded);
-            var _currentAnimationClip = animationClip == null ? -1 : animationClip.GetInstanceID();
+            _animationClip = (AnimationClip)EditorGUILayout.ObjectField("Animation Clip", _animationClip, typeof(AnimationClip), false, Services.LayoutExpanded);
+            var _currentAnimationClip = _animationClip == null ? -1 : _animationClip.GetInstanceID();
             if (_lastAnimationClip != _currentAnimationClip)
             {
                 _lastAnimationClip = _currentAnimationClip;
@@ -283,19 +283,19 @@ namespace Elypha.UnityMaterialHelper
             }
             GUILayout.EndHorizontal();
 
-            if (animationClip == null) GUI.enabled = false;
-            EditorGUILayout.IntField("┗ Next frame on this clip", clipNextFrame);
-            if (animationClip == null) GUI.enabled = true;
+            if (_animationClip == null) GUI.enabled = false;
+            EditorGUILayout.IntField("┗ Next frame on this clip", _clipNextFrame);
+            if (_animationClip == null) GUI.enabled = true;
 
 
             // Next Frame
             Services.LabelBoldColored("Add keyframe", Services.ColourBold);
 
-            if (animationClip == null) GUI.enabled = false;
-            targetFrameNumber = EditorGUILayout.IntField("Target Frame", targetFrameNumber);
-            if (animationClip == null) GUI.enabled = true;
+            if (_animationClip == null) GUI.enabled = false;
+            _targetFrameNumber = EditorGUILayout.IntField("Target Frame", _targetFrameNumber);
+            if (_animationClip == null) GUI.enabled = true;
 
-            if (animationClip == null)
+            if (_animationClip == null)
             {
                 GUI.enabled = false;
                 GUILayout.Button("Please select an Animation Clip");
@@ -303,9 +303,9 @@ namespace Elypha.UnityMaterialHelper
             }
             else
             {
-                var seconds = Math.Floor(targetFrameNumber / animationClip.frameRate);
-                var frames = targetFrameNumber % animationClip.frameRate;
-                if (GUILayout.Button($"Add {targetMaterials.Count} materials to Frame #{targetFrameNumber} [{seconds}:{frames:00}]"))
+                var seconds = Math.Floor(_targetFrameNumber / _animationClip.frameRate);
+                var frames = _targetFrameNumber % _animationClip.frameRate;
+                if (GUILayout.Button($"Add {_targetMaterials.Count} materials to Frame #{_targetFrameNumber} [{seconds}:{frames:00}]"))
                 {
                     AddMaterialSwapKeyframes();
                 }
@@ -316,14 +316,14 @@ namespace Elypha.UnityMaterialHelper
         private void LoadRenderers()
         {
             Services.Unfocus();
-            if (outfitObject == null) return;
+            if (_outfitObject == null) return;
 
-            rendererConfigs.Clear();
+            _rendererConfigs.Clear();
 
-            var renderers = Services.GetSkinnedGameObjects(outfitObject);
+            var renderers = Services.GetSkinnedGameObjects(_outfitObject);
             foreach (GameObject go in renderers)
             {
-                rendererConfigs[go] = new RendererConfig
+                _rendererConfigs[go] = new RendererConfig
                 {
                     OriginalMaterials = go.GetComponent<SkinnedMeshRenderer>().sharedMaterials,
                 };
@@ -333,15 +333,15 @@ namespace Elypha.UnityMaterialHelper
         private void UpdateRendererColour()
         {
             Services.Unfocus();
-            if (outfitObject == null) return;
+            if (_outfitObject == null) return;
 
             // set to off, if all its materials are not enabled
-            foreach (var pair in rendererConfigs)
+            foreach (var pair in _rendererConfigs)
             {
                 bool hasEnabledMaterial = false;
                 foreach (var mat in pair.Value.OriginalMaterials)
                 {
-                    if (materialConfigs.ContainsKey(mat) && materialConfigs[mat].Enabled)
+                    if (_materialConfigs.ContainsKey(mat) && _materialConfigs[mat].Enabled)
                     {
                         hasEnabledMaterial = true;
                         break;
@@ -355,18 +355,18 @@ namespace Elypha.UnityMaterialHelper
         private void LoadMaterials()
         {
             Services.Unfocus();
-            if (outfitObject == null) return;
+            if (_outfitObject == null) return;
 
-            materialConfigs.Clear();
+            _materialConfigs.Clear();
             var renderers = GetRenderers();
             var enabledRenderers = GetEnabledRenderers();
             foreach (SkinnedMeshRenderer renderer in enabledRenderers)
             {
                 foreach (Material mat in renderer.sharedMaterials)
                 {
-                    if (mat != null && !materialConfigs.ContainsKey(mat))
+                    if (mat != null && !_materialConfigs.ContainsKey(mat))
                     {
-                        materialConfigs[mat] = new MaterialConfig
+                        _materialConfigs[mat] = new MaterialConfig
                         {
                             Enabled = false,
                             TargetMaterial = mat,
@@ -378,9 +378,9 @@ namespace Elypha.UnityMaterialHelper
             {
                 foreach (Material mat in renderer.sharedMaterials)
                 {
-                    if (mat != null && !materialConfigs.ContainsKey(mat))
+                    if (mat != null && !_materialConfigs.ContainsKey(mat))
                     {
-                        materialConfigs[mat] = new MaterialConfig
+                        _materialConfigs[mat] = new MaterialConfig
                         {
                             Enabled = false,
                             TargetMaterial = null,
@@ -395,10 +395,10 @@ namespace Elypha.UnityMaterialHelper
         private void LoadAnimationClip()
         {
             Services.Unfocus();
-            if (animationClip == null) return;
+            if (_animationClip == null) return;
 
-            clipNextFrame = animationClip.empty ? 0 : (int)(animationClip.length * animationClip.frameRate);
-            targetFrameNumber = clipNextFrame;
+            _clipNextFrame = _animationClip.empty ? 0 : (int)(_animationClip.length * _animationClip.frameRate);
+            _targetFrameNumber = _clipNextFrame;
         }
 
 
@@ -410,25 +410,25 @@ namespace Elypha.UnityMaterialHelper
             foreach (SkinnedMeshRenderer renderer in GetEnabledRenderers())
             {
                 // path
-                var path = renderer.transform.GetRelativePath(assumedRootObject.transform);
-                if (isOverrideOutfitObjectName && !string.IsNullOrEmpty(overrideOutfitObjectName))
+                var path = renderer.transform.GetRelativePath(_assumedRootObject.transform);
+                if (_isOverrideOutfitObjectName && !string.IsNullOrEmpty(_overrideOutfitObjectName))
                 {
-                    path = Utils.ReplaceLastOccurrence(path, outfitObject.name, overrideOutfitObjectName);
+                    path = Utils.ReplaceLastOccurrence(path, _outfitObject.name, _overrideOutfitObjectName);
                 }
 
                 for (int i = 0; i < renderer.sharedMaterials.Length; i++)
                 {
                     var mat = renderer.sharedMaterials[i];
-                    if (!materialConfigs.ContainsKey(mat) || !materialConfigs[mat].Enabled) continue;
+                    if (!_materialConfigs.ContainsKey(mat) || !_materialConfigs[mat].Enabled) continue;
 
                     var binding = EditorCurveBinding.PPtrCurve(path, typeof(SkinnedMeshRenderer), $"m_Materials.Array.data[{i}]");
-                    var keyframes = AnimationUtility.GetObjectReferenceCurve(animationClip, binding) ?? new ObjectReferenceKeyframe[0];
+                    var keyframes = AnimationUtility.GetObjectReferenceCurve(_animationClip, binding) ?? new ObjectReferenceKeyframe[0];
 
                     // Add a series of keyframes, one per target material at consecutive frames
-                    for (int targetIndex = 0; targetIndex < targetMaterials.Count; targetIndex++)
+                    for (int targetIndex = 0; targetIndex < _targetMaterials.Count; targetIndex++)
                     {
-                        var frameTime = (targetFrameNumber + targetIndex) / animationClip.frameRate;
-                        var targetMat = targetMaterials[targetIndex];
+                        var frameTime = (_targetFrameNumber + targetIndex) / _animationClip.frameRate;
+                        var targetMat = _targetMaterials[targetIndex];
 
                         var newKeyframe = new ObjectReferenceKeyframe
                         {
@@ -453,7 +453,7 @@ namespace Elypha.UnityMaterialHelper
                         }
                     }
 
-                    AnimationUtility.SetObjectReferenceCurve(animationClip, binding, keyframes);
+                    AnimationUtility.SetObjectReferenceCurve(_animationClip, binding, keyframes);
                 }
             }
 
@@ -478,7 +478,7 @@ namespace Elypha.UnityMaterialHelper
             public bool Excluded = false;
         }
 
-        private SkinnedMeshRenderer[] GetEnabledRenderers() => rendererConfigs.Where(pair => pair.Value.Enabled).Select(pair => pair.Key.GetComponent<SkinnedMeshRenderer>()).ToArray();
-        private SkinnedMeshRenderer[] GetRenderers() => rendererConfigs.Keys.Select(go => go.GetComponent<SkinnedMeshRenderer>()).ToArray();
+        private SkinnedMeshRenderer[] GetEnabledRenderers() => _rendererConfigs.Where(pair => pair.Value.Enabled).Select(pair => pair.Key.GetComponent<SkinnedMeshRenderer>()).ToArray();
+        private SkinnedMeshRenderer[] GetRenderers() => _rendererConfigs.Keys.Select(go => go.GetComponent<SkinnedMeshRenderer>()).ToArray();
     }
 }

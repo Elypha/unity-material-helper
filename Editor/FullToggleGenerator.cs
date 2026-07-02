@@ -9,17 +9,17 @@ namespace Elypha.UnityMaterialHelper
 {
     public class FullToggleGeneratorWindow : EditorWindow
     {
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
-        private GameObject assumedRootObject;
-        private AnimationClip targetClip;
-        private readonly List<GameObjectGroup> objectGroups = new();
-        private void ObjectGroupsAddNew() => objectGroups.Add(new GameObjectGroup() { groupName = $"Group {objectGroups.Count + 1}" });
+        private GameObject _assumedRootObject;
+        private AnimationClip _targetClip;
+        private readonly List<GameObjectGroup> _objectGroups = new();
+        private void ObjectGroupsAddNew() => _objectGroups.Add(new GameObjectGroup() { groupName = $"Group {_objectGroups.Count + 1}" });
 
-        private bool showAdvancedSettings = false;
-        private static PluginLanguage language = PluginLanguage.English;
-        private readonly FullToggleGeneratorI18N i18n = new(language);
-        private readonly GuiMessage guiMessage = new();
+        private bool _showAdvancedSettings = false;
+        private static PluginLanguage _language = PluginLanguage.English;
+        private readonly FullToggleGeneratorI18N _i18n = new(_language);
+        private readonly GuiMessage _guiMessage = new();
 
 
         [MenuItem("Elypha/Full Toggle Generator")]
@@ -27,7 +27,7 @@ namespace Elypha.UnityMaterialHelper
         {
             var window = GetWindow<FullToggleGeneratorWindow>("Full Toggle Generator");
             window.minSize = new Vector2(300, 400);
-            if (window.objectGroups.Count == 0)
+            if (window._objectGroups.Count == 0)
             {
                 window.ObjectGroupsAddNew();
             }
@@ -36,14 +36,14 @@ namespace Elypha.UnityMaterialHelper
 
         private void OnGUI()
         {
-            Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+            Services.DrawAdvancedSettings(ref _showAdvancedSettings, ref _language, _i18n);
 
-            Services.DrawTitle1(i18n.Localise("Settings"));
+            Services.DrawTitle1(_i18n.Localise("Settings"));
 
             GUILayout.Label("Target Animation Clip", EditorStyles.boldLabel);
 
-            targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", targetClip, typeof(AnimationClip), false);
-            assumedRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", assumedRootObject, typeof(GameObject), true, Services.LayoutExpanded);
+            _targetClip = (AnimationClip)EditorGUILayout.ObjectField("Write curves to", _targetClip, typeof(AnimationClip), false);
+            _assumedRootObject = (GameObject)EditorGUILayout.ObjectField("Path relative to", _assumedRootObject, typeof(GameObject), true, Services.LayoutExpanded);
 
             EditorGUILayout.Space(8);
 
@@ -51,7 +51,7 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.Space(2);
 
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
             DrawObjectGroups();
 
@@ -59,10 +59,10 @@ namespace Elypha.UnityMaterialHelper
 
             Services.Separator();
 
-            guiMessage.Draw(10, Repaint);
+            _guiMessage.Draw(10, Repaint);
 
             GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
-            if (GUILayout.Button(i18n.Localise("Generate Full Toggle Animation"), GUILayout.Height(40)))
+            if (GUILayout.Button(_i18n.Localise("Generate Full Toggle Animation"), GUILayout.Height(40)))
             {
                 try
                 {
@@ -95,9 +95,9 @@ namespace Elypha.UnityMaterialHelper
 
         private void DrawObjectGroups()
         {
-            for (int i = 0; i < objectGroups.Count; i++)
+            for (int i = 0; i < _objectGroups.Count; i++)
             {
-                var group = objectGroups[i];
+                var group = _objectGroups[i];
 
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -111,7 +111,7 @@ namespace Elypha.UnityMaterialHelper
                 GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);
                 if (GUILayout.Button("－", GUILayout.Width(25)))
                 {
-                    objectGroups.RemoveAt(i);
+                    _objectGroups.RemoveAt(i);
                     Repaint();
                     return;
                 }
@@ -141,13 +141,13 @@ namespace Elypha.UnityMaterialHelper
 
         private void GenerateFullToggleAnimation()
         {
-            if (targetClip == null)
+            if (_targetClip == null)
             {
                 EditorUtility.DisplayDialog("Error", "You must select a target Animation Clip.", "OK");
                 return;
             }
 
-            var validGroups = objectGroups.Where(g => g.gameObjects != null && g.gameObjects.Any(go => go != null)).ToList();
+            var validGroups = _objectGroups.Where(g => g.gameObjects != null && g.gameObjects.Any(go => go != null)).ToList();
 
             if (validGroups.Count == 0)
             {
@@ -155,9 +155,9 @@ namespace Elypha.UnityMaterialHelper
                 return;
             }
 
-            Undo.RecordObject(targetClip, "Generate Full Toggle Animation");
+            Undo.RecordObject(_targetClip, "Generate Full Toggle Animation");
 
-            targetClip.ClearCurves();
+            _targetClip.ClearCurves();
 
             int frame = 0;
 
@@ -193,7 +193,7 @@ namespace Elypha.UnityMaterialHelper
             foreach (var states in allStates)
             {
                 // Calculate the time for this frame every frame
-                float time = (float)frame / targetClip.frameRate;
+                float time = (float)frame / _targetClip.frameRate;
 
                 EditorUtility.DisplayProgressBar(
                     "Generating Animation",
@@ -207,13 +207,13 @@ namespace Elypha.UnityMaterialHelper
             // After all states are set, write the curves to the AnimationClip
             foreach (var a in curves)
             {
-                AnimationUtility.SetEditorCurve(targetClip, a.Key, a.Value);
+                AnimationUtility.SetEditorCurve(_targetClip, a.Key, a.Value);
             }
 
             EditorUtility.ClearProgressBar();
-            guiMessage.Show($"Done! {frame} frames written to '{targetClip.name}'.", 3.0);
+            _guiMessage.Show($"Done! {frame} frames written to '{_targetClip.name}'.", 3.0);
 
-            EditorUtility.SetDirty(targetClip);
+            EditorUtility.SetDirty(_targetClip);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -226,8 +226,8 @@ namespace Elypha.UnityMaterialHelper
                 {
                     if (go == null) continue;
 
-                    string path = assumedRootObject != null
-                        ? AnimationUtility.CalculateTransformPath(go.transform, assumedRootObject.transform)
+                    string path = _assumedRootObject != null
+                        ? AnimationUtility.CalculateTransformPath(go.transform, _assumedRootObject.transform)
                         : AnimationUtility.CalculateTransformPath(go.transform, null);
 
                     EditorCurveBinding binding = new()

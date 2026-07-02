@@ -17,45 +17,45 @@ namespace Elypha.UnityMaterialHelper
             window.minSize = new Vector2(400, 400);
         }
 
-        private GameObject referenceOutfit;
-        private GameObject referenceArmature;
-        private GameObject targetArmature;
-        private GameObject physBoneParentObject;
-        private GameObject PhysBoneCollidersParentObject;
-        private VRCPhysBone[] physBones;
-        private VRCPhysBoneCollider[] physBoneColliders;
-        private readonly Dictionary<VRCPhysBoneCollider, VRCPhysBoneCollider> pbcMap = new();
+        private GameObject _referenceOutfit;
+        private GameObject _referenceArmature;
+        private GameObject _targetArmature;
+        private GameObject _physBoneParentObject;
+        private GameObject _physBoneCollidersParentObject;
+        private VRCPhysBone[] _physBones;
+        private VRCPhysBoneCollider[] _physBoneColliders;
+        private readonly Dictionary<VRCPhysBoneCollider, VRCPhysBoneCollider> _pbcMap = new();
 
-        private readonly List<string> armatureReferenceOnlyReport = new();
-        private readonly List<string> armatureTargetOnlyReport = new();
-        private readonly List<string> nullColliderReport = new();
-        private readonly List<string> extraComponentReport = new();
+        private readonly List<string> _armatureReferenceOnlyReport = new();
+        private readonly List<string> _armatureTargetOnlyReport = new();
+        private readonly List<string> _nullColliderReport = new();
+        private readonly List<string> _extraComponentReport = new();
 
-        private readonly GuiMessage guiMessage = new();
+        private readonly GuiMessage _guiMessage = new();
 
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
         private void OnGUI()
         {
-            referenceOutfit = (GameObject)EditorGUILayout.ObjectField("Reference Outfit", referenceOutfit, typeof(GameObject), true);
-            referenceArmature = (GameObject)EditorGUILayout.ObjectField("Reference Armature", referenceArmature, typeof(GameObject), true);
-            targetArmature = (GameObject)EditorGUILayout.ObjectField("Target Armature", targetArmature, typeof(GameObject), true);
-            physBoneParentObject = (GameObject)EditorGUILayout.ObjectField("Create PBs under", physBoneParentObject, typeof(GameObject), true);
-            PhysBoneCollidersParentObject = (GameObject)EditorGUILayout.ObjectField("Create PB Colliders under", PhysBoneCollidersParentObject, typeof(GameObject), true);
+            _referenceOutfit = (GameObject)EditorGUILayout.ObjectField("Reference Outfit", _referenceOutfit, typeof(GameObject), true);
+            _referenceArmature = (GameObject)EditorGUILayout.ObjectField("Reference Armature", _referenceArmature, typeof(GameObject), true);
+            _targetArmature = (GameObject)EditorGUILayout.ObjectField("Target Armature", _targetArmature, typeof(GameObject), true);
+            _physBoneParentObject = (GameObject)EditorGUILayout.ObjectField("Create PBs under", _physBoneParentObject, typeof(GameObject), true);
+            _physBoneCollidersParentObject = (GameObject)EditorGUILayout.ObjectField("Create PB Colliders under", _physBoneCollidersParentObject, typeof(GameObject), true);
 
-            GUI.enabled = referenceArmature && targetArmature;
+            GUI.enabled = _referenceArmature && _targetArmature;
             if (GUILayout.Button("Analyse Armature"))
             {
-                nullColliderReport.Clear();
-                extraComponentReport.Clear();
-                armatureReferenceOnlyReport.Clear();
-                armatureTargetOnlyReport.Clear();
+                _nullColliderReport.Clear();
+                _extraComponentReport.Clear();
+                _armatureReferenceOnlyReport.Clear();
+                _armatureTargetOnlyReport.Clear();
 
                 FetchArmatureData();
             }
             GUI.enabled = true;
 
-            GUI.enabled = referenceArmature && targetArmature && physBoneParentObject && PhysBoneCollidersParentObject;
+            GUI.enabled = _referenceArmature && _targetArmature && _physBoneParentObject && _physBoneCollidersParentObject;
             if (GUILayout.Button("Extract Phys Bones"))
             {
                 ExtractPhysBones();
@@ -63,18 +63,18 @@ namespace Elypha.UnityMaterialHelper
             GUI.enabled = true;
 
             Services.Separator();
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
             Services.DrawTitle1("Status Messages", 8);
 
 
-            EditorGUILayout.LabelField($"Found {physBones?.Length} PhysBones and {physBoneColliders?.Length} PhysBoneColliders.");
+            EditorGUILayout.LabelField($"Found {_physBones?.Length} PhysBones and {_physBoneColliders?.Length} PhysBoneColliders.");
 
             EditorGUILayout.LabelField("Null collider references:", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            if (nullColliderReport.Any())
+            if (_nullColliderReport.Any())
             {
-                foreach (var line in nullColliderReport)
+                foreach (var line in _nullColliderReport)
                 {
                     EditorGUILayout.LabelField(line);
                 }
@@ -87,9 +87,9 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.LabelField("Extra components on reference armature:", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            if (extraComponentReport.Any())
+            if (_extraComponentReport.Any())
             {
-                foreach (var line in extraComponentReport)
+                foreach (var line in _extraComponentReport)
                 {
                     EditorGUILayout.LabelField(line);
                 }
@@ -102,9 +102,9 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.LabelField("Armature Reference Only:", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            if (armatureReferenceOnlyReport.Any())
+            if (_armatureReferenceOnlyReport.Any())
             {
-                foreach (var text in armatureReferenceOnlyReport)
+                foreach (var text in _armatureReferenceOnlyReport)
                 {
                     EditorGUILayout.LabelField(text);
                 }
@@ -118,9 +118,9 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.LabelField("Armature Target Only:", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
-            if (armatureTargetOnlyReport.Any())
+            if (_armatureTargetOnlyReport.Any())
             {
-                foreach (var text in armatureTargetOnlyReport)
+                foreach (var text in _armatureTargetOnlyReport)
                 {
                     EditorGUILayout.LabelField(text);
                 }
@@ -133,42 +133,42 @@ namespace Elypha.UnityMaterialHelper
 
             EditorGUILayout.EndScrollView();
 
-            guiMessage.Draw(10, Repaint);
+            _guiMessage.Draw(10, Repaint);
 
         }
 
         private void FetchArmatureData()
         {
-            physBones = referenceOutfit.GetComponentsInChildren<VRCPhysBone>(true);
-            physBoneColliders = referenceOutfit.GetComponentsInChildren<VRCPhysBoneCollider>(true);
+            _physBones = _referenceOutfit.GetComponentsInChildren<VRCPhysBone>(true);
+            _physBoneColliders = _referenceOutfit.GetComponentsInChildren<VRCPhysBoneCollider>(true);
 
-            foreach (var pb in physBones)
+            foreach (var pb in _physBones)
             {
                 if (pb.colliders.Any(x => x == null))
                 {
-                    var relative_path = pb.transform.GetRelativePath(referenceOutfit.transform);
-                    nullColliderReport.Add($"PhysBone '{relative_path}' has null colliders.");
+                    var relative_path = pb.transform.GetRelativePath(_referenceOutfit.transform);
+                    _nullColliderReport.Add($"PhysBone '{relative_path}' has null colliders.");
                 }
             }
 
-            var referenceArmatureTransforms = referenceArmature.GetComponentsInChildren<Transform>(true);
+            var referenceArmatureTransforms = _referenceArmature.GetComponentsInChildren<Transform>(true);
             var referenceArmatureRelPaths = referenceArmatureTransforms
-                .Select(t => t.GetRelativePath(referenceArmature.transform))
+                .Select(t => t.GetRelativePath(_referenceArmature.transform))
                 .ToHashSet();
 
-            var targetArmatureTransforms = targetArmature.GetComponentsInChildren<Transform>(true);
+            var targetArmatureTransforms = _targetArmature.GetComponentsInChildren<Transform>(true);
             var targetArmatureRelPaths = targetArmatureTransforms
-                .Select(t => t.GetRelativePath(targetArmature.transform))
+                .Select(t => t.GetRelativePath(_targetArmature.transform))
                 .ToHashSet();
 
             foreach (var transform in referenceArmatureTransforms)
             {
-                var path = transform.GetRelativePath(referenceArmature.transform);
+                var path = transform.GetRelativePath(_referenceArmature.transform);
                 if (!targetArmatureRelPaths.Contains(path))
                 {
                     var numPBs = transform.GetComponents<VRCPhysBone>().Length;
                     var numPBCs = transform.GetComponents<VRCPhysBoneCollider>().Length;
-                    armatureReferenceOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
+                    _armatureReferenceOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
                 }
 
                 foreach (var component in transform.GetComponents<Component>())
@@ -181,18 +181,18 @@ namespace Elypha.UnityMaterialHelper
                     if (path == "" && name.StartsWith("ModularAvatar"))
                         continue;
 
-                    extraComponentReport.Add($"{path}: <{name}>.");
+                    _extraComponentReport.Add($"{path}: <{name}>.");
                 }
             }
 
             foreach (var transform in targetArmatureTransforms)
             {
-                var path = transform.GetRelativePath(targetArmature.transform);
+                var path = transform.GetRelativePath(_targetArmature.transform);
                 if (!referenceArmatureRelPaths.Contains(path))
                 {
                     var numPBs = transform.GetComponents<VRCPhysBone>().Length;
                     var numPBCs = transform.GetComponents<VRCPhysBoneCollider>().Length;
-                    armatureTargetOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
+                    _armatureTargetOnlyReport.Add($"{path}" + (numPBs > 0 ? $",PB={numPBs}" : "") + (numPBCs > 0 ? $",PBC={numPBCs}" : ""));
                 }
             }
         }
@@ -202,15 +202,15 @@ namespace Elypha.UnityMaterialHelper
             var errors = new List<string>();
             var results = new List<string>();
 
-            pbcMap.Clear();
+            _pbcMap.Clear();
             Undo.SetCurrentGroupName("Extract PhysBones");
             int group = Undo.GetCurrentGroup();
 
-            foreach (var pbc in physBoneColliders)
+            foreach (var pbc in _physBoneColliders)
             {
                 var go = new GameObject(pbc.name);
                 Undo.RegisterCreatedObjectUndo(go, $"Create PhysBoneCollider {pbc.name}");
-                go.transform.SetParent(PhysBoneCollidersParentObject.transform, false);
+                go.transform.SetParent(_physBoneCollidersParentObject.transform, false);
                 var _pbc = (VRCPhysBoneCollider)Undo.AddComponent(go, pbc.GetType());
                 EditorUtility.CopySerialized(pbc, _pbc);
 
@@ -224,7 +224,7 @@ namespace Elypha.UnityMaterialHelper
                 if (pbc.rootTransform == null || pbc.rootTransform == pbc.transform)
                 {
                     var pbcRoot = pbc.transform.parent.transform;
-                    _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, referenceArmature.transform, targetArmature.transform);
+                    _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, _referenceArmature.transform, _targetArmature.transform);
 
                     if (!Services.IsPhysBoneColliderTransformValueDefault(pbc))
                     {
@@ -258,7 +258,7 @@ namespace Elypha.UnityMaterialHelper
                 else
                 {
                     var pbcRoot = pbc.rootTransform;
-                    _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, referenceArmature.transform, targetArmature.transform);
+                    _colliderRoot = Services.GetCorrespondingTransformByRelativePath(pbcRoot, _referenceArmature.transform, _targetArmature.transform);
 
                     // Technically, we can just copy the values but since I haven't seen one, please also double-check the results.
                     errors.Add($"PhysBoneCollider '{pbc.name}' has a rootTransform set to '{pbcRoot.name}' -> '{(_colliderRoot == null ? "null" : _colliderRoot.name)}', you need to double-check the results.");
@@ -280,27 +280,27 @@ namespace Elypha.UnityMaterialHelper
                 _pbc.position = _colliderPosition;
                 _pbc.rotation = _colliderRotation;
 
-                results.Add($"PhysBoneCollider: '{pbc.transform.GetRelativePath(referenceArmature.transform)}' => '{_pbc.name}'");
+                results.Add($"PhysBoneCollider: '{pbc.transform.GetRelativePath(_referenceArmature.transform)}' => '{_pbc.name}'");
 
-                pbcMap[pbc] = _pbc;
+                _pbcMap[pbc] = _pbc;
             }
 
-            foreach (var pb in physBones)
+            foreach (var pb in _physBones)
             {
                 var go = new GameObject(pb.name);
                 Undo.RegisterCreatedObjectUndo(go, $"Create PhysBone {pb.name}");
-                go.transform.SetParent(physBoneParentObject.transform, false);
+                go.transform.SetParent(_physBoneParentObject.transform, false);
                 var _pb = (VRCPhysBone)Undo.AddComponent(go, pb.GetType());
                 EditorUtility.CopySerialized(pb, _pb);
 
                 var pb_root = Services.GetPhysBoneRoot(pb);
-                var relative_path = pb_root.GetRelativePath(referenceArmature.transform);
-                var _pb_root = targetArmature.transform.Find(relative_path);
+                var relative_path = pb_root.GetRelativePath(_referenceArmature.transform);
+                var _pb_root = _targetArmature.transform.Find(relative_path);
 
                 Undo.RecordObject(_pb, "Set PhysBone Root");
                 _pb.rootTransform = _pb_root;
 
-                results.Add($"PhysBone: '{pb.transform.GetRelativePath(referenceArmature.transform)}' => '{_pb.name}'");
+                results.Add($"PhysBone: '{pb.transform.GetRelativePath(_referenceArmature.transform)}' => '{_pb.name}'");
 
                 if (_pb.colliders.Count > 0)
                 {
@@ -308,9 +308,9 @@ namespace Elypha.UnityMaterialHelper
 
                     foreach (var oldCollider in pb.colliders)
                     {
-                        if (oldCollider is VRCPhysBoneCollider typedOldCollider && pbcMap.TryGetValue(typedOldCollider, out var newCollider))
+                        if (oldCollider is VRCPhysBoneCollider typedOldCollider && _pbcMap.TryGetValue(typedOldCollider, out var newCollider))
                         {
-                            results.Add($"- with collider: '{oldCollider.transform.GetRelativePath(referenceArmature.transform)}' mapped to '{newCollider.name}'");
+                            results.Add($"- with collider: '{oldCollider.transform.GetRelativePath(_referenceArmature.transform)}' mapped to '{newCollider.name}'");
                             newColliderList.Add(newCollider);
                         }
                         else if (oldCollider != null)
@@ -333,7 +333,7 @@ namespace Elypha.UnityMaterialHelper
                 Debug.LogError("However, during extraction there are errors:\n" + string.Join("\n", errors));
             }
 
-            guiMessage.Show($"Extracted {physBones.Length} PhysBones and {physBoneColliders.Length} PhysBoneColliders. {errors.Count} errors.", 3.0);
+            _guiMessage.Show($"Extracted {_physBones.Length} PhysBones and {_physBoneColliders.Length} PhysBoneColliders. {errors.Count} errors.", 3.0);
         }
     }
 }

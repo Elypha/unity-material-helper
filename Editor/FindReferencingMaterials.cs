@@ -18,10 +18,10 @@ namespace Elypha.UnityMaterialHelper
 
         private const float TextureAreaHeight = 125f;
 
-        private bool showAdvancedSettings = false;
-        private static PluginLanguage language = PluginLanguage.English;
-        private readonly TemplateI18N i18n = new(language);
-        private readonly GuiMessage guiMessage = new();
+        private bool _showAdvancedSettings = false;
+        private static PluginLanguage _language = PluginLanguage.English;
+        private readonly TemplateI18N _i18n = new(_language);
+        private readonly GuiMessage _guiMessage = new();
 
         [MenuItem("Elypha/Find Referencing Materials")]
         public static void ShowWindow()
@@ -34,9 +34,9 @@ namespace Elypha.UnityMaterialHelper
 
         void OnGUI()
         {
-            Services.DrawAdvancedSettings(ref showAdvancedSettings, ref language, i18n);
+            Services.DrawAdvancedSettings(ref _showAdvancedSettings, ref _language, _i18n);
 
-            Services.DrawTitle1(i18n.Localise("Settings"));
+            Services.DrawTitle1(_i18n.Localise("Settings"));
 
             DrawAddTexture();
 
