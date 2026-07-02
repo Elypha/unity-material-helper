@@ -41,14 +41,20 @@ namespace Elypha.UnityMaterialHelper
 
         private void OnGUI()
         {
-            renderer = EditorGUILayout.ObjectField("Renderer", renderer, typeof(SkinnedMeshRenderer), true) as SkinnedMeshRenderer;
-            newRootBone = EditorGUILayout.ObjectField("New RootBone", newRootBone, typeof(Transform), true) as Transform;
-            referenceRenderer = EditorGUILayout.ObjectField("Reference Renderer", referenceRenderer, typeof(SkinnedMeshRenderer), true) as SkinnedMeshRenderer;
+            renderer =
+                EditorGUILayout.ObjectField("Renderer", renderer, typeof(SkinnedMeshRenderer), true) as
+                    SkinnedMeshRenderer;
+            newRootBone =
+                EditorGUILayout.ObjectField("New RootBone", newRootBone, typeof(Transform), true) as Transform;
+            referenceRenderer =
+                EditorGUILayout.ObjectField("Reference Renderer", referenceRenderer, typeof(SkinnedMeshRenderer), true)
+                    as SkinnedMeshRenderer;
 
             if (GUILayout.Button("Analyse Renderer"))
             {
                 result = AnalyseSkinnedMeshRenderer();
             }
+
             if (GUILayout.Button("Update Bones from Reference"))
             {
                 result = UpdateSkinnedMeshRenderer();
@@ -82,10 +88,11 @@ namespace Elypha.UnityMaterialHelper
             for (int i = 0; i < largerLength; i++)
             {
                 sb.Append($"{i,4}  ");
-                var bone = TryGetElement(renderer.bones, i);
+                TryGetElement(renderer.bones, i, out var bone);
                 var boneName = bone ? bone.name : "null";
+
                 sb.Append($"{boneName,24}  ");
-                var refBone = TryGetElement(referenceRenderer.bones, i);
+                TryGetElement(referenceRenderer.bones, i, out var refBone);
                 var refBoneName = refBone ? refBone.name : "null";
                 sb.Append($"{refBoneName,24}  ");
 
@@ -107,12 +114,14 @@ namespace Elypha.UnityMaterialHelper
                     sb.Append("-");
                     countMissing++;
                 }
+
                 sb.Append("\n");
             }
 
             if (renderer.bones.Length != referenceRenderer.bones.Length)
             {
-                sb.AppendLine($"ERROR: The number of bones in the renderer ({renderer.bones.Length}) does not match the reference renderer ({referenceRenderer.bones.Length}).");
+                sb.AppendLine(
+                    $"ERROR: The number of bones in the renderer ({renderer.bones.Length}) does not match the reference renderer ({referenceRenderer.bones.Length}).");
                 return sb.ToString();
             }
 
@@ -127,7 +136,8 @@ namespace Elypha.UnityMaterialHelper
             // --------------------------------
             var bonePathMap = referenceRenderer.bones
                 .Where(b => b != null)
-                .ToDictionary(b => b.name, b => b.gameObject.transform.GetRelativePath(referenceRenderer.rootBone.parent));
+                .ToDictionary(b => b.name,
+                    b => b.gameObject.transform.GetRelativePath(referenceRenderer.rootBone.parent));
             var newRootBoneMissingCount = 0;
             foreach (var bone in bonePathMap)
             {
@@ -137,8 +147,10 @@ namespace Elypha.UnityMaterialHelper
                     sb.AppendLine($"{bone.Key} at '{bone.Value}' not found in the new Root Bone.");
                     newRootBoneMissingCount++;
                 }
+
                 boneDictionary[bone.Key] = targetInNewRootBone;
             }
+
             sb.AppendLine($"Total missing bones in new Root Bone: {newRootBoneMissingCount}\n");
 
             return sb.ToString();
@@ -159,11 +171,17 @@ namespace Elypha.UnityMaterialHelper
             return sb.ToString();
         }
 
-        public static T? TryGetElement<T>(T[] array, int index) where T : class
+        public static bool TryGetElement<T>(T[] array, int index, out T result)
+            where T : class
         {
             if (index >= 0 && index < array.Length)
-                return array[index];
-            return null;
+            {
+                result = array[index];
+                return true;
+            }
+
+            result = null;
+            return false;
         }
     }
 }
