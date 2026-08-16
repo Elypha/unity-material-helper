@@ -8,7 +8,7 @@ namespace Elypha.UnityMaterialHelper
 {
     public class MaterialMatcher : EditorWindow
     {
-        [MenuItem("Elypha/Material Matcher")]
+        [MenuItem("Elypha/Material Matcher", false, 205)]
         public static void ShowWindow()
         {
             var window = GetWindow<MaterialMatcher>("Material Matcher");

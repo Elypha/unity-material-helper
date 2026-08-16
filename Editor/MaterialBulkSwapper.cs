@@ -35,7 +35,7 @@ namespace Elypha.UnityMaterialHelper
         private int actionTabIndex = 0;
 
 
-        [MenuItem("Elypha/Material Bulk Swapper")]
+        [MenuItem("Elypha/Material Bulk Swapper", false, 204)]
         public static void ShowWindow()
         {
             var window = GetWindow<MaterialBulkSwapper>("Material Bulk Swapper");

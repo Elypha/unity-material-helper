@@ -20,7 +20,7 @@ namespace Elypha.UnityMaterialHelper
             public string CurrentShaderName;
         }
 
-        [MenuItem("Elypha/Shader Converter")]
+        [MenuItem("Elypha/Shader Converter", false, 209)]
         public static void ShowWindow()
         {
             var window = GetWindow<ShaderConverterWindow>("Shader Converter");

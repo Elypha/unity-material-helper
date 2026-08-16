@@ -23,7 +23,7 @@ namespace Elypha.UnityMaterialHelper
         private readonly TemplateI18N _i18n = new(_language);
         private readonly GuiMessage _guiMessage = new();
 
-        [MenuItem("Elypha/Find Referencing Materials")]
+        [MenuItem("Elypha/Find Referencing Materials", false, 202)]
         public static void ShowWindow()
         {
             var window = GetWindow<FindReferencingMaterials>("Find Referencing Materials");

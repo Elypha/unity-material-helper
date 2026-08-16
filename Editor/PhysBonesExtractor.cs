@@ -10,7 +10,7 @@ namespace Elypha.UnityMaterialHelper
 {
     public class PhysBonesExtractor : EditorWindow
     {
-        [MenuItem("Elypha/Phys Bones Extractor")]
+        [MenuItem("Elypha/Phys Bones Extractor", false, 207)]
         public static void ShowWindow()
         {
             var window = GetWindow<PhysBonesExtractor>("Phys Bones Extractor");

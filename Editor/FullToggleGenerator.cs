@@ -22,7 +22,7 @@ namespace Elypha.UnityMaterialHelper
         private readonly GuiMessage _guiMessage = new();
 
 
-        [MenuItem("Elypha/Full Toggle Generator")]
+        [MenuItem("Elypha/Full Toggle Generator", false, 203)]
         public static void ShowWindow()
         {
             var window = GetWindow<FullToggleGeneratorWindow>("Full Toggle Generator");

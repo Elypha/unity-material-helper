@@ -42,7 +42,11 @@ jobs:
           include-files: metaList
 
       - name: Create zip
-        run: zip -r ${{ steps.info.outputs.zipName }} . -x ".git/*" ".github/*" "metaList" "RELEASE_NOTES.md"
+        run: |
+          zip -r "${{ steps.info.outputs.zipName }}" . \
+            -x ".git/*" ".github/*" "metaList" "RELEASE_NOTES.md" \
+               "${{ steps.info.outputs.zipName }}" \
+               "${{ steps.info.outputs.unitypackageName }}"
 
       - name: Generate release notes
         uses: orhun/git-cliff-action@v4

@@ -34,7 +34,7 @@ namespace Elypha.UnityMaterialHelper
             public bool HasPlatformOverrides;
         }
 
-        [MenuItem("Elypha/Texture Manager")]
+        [MenuItem("Elypha/Texture Manager", false, 212)]
         public static void ShowWindow()
         {
             var window = GetWindow<TextureManager>("Texture Manager");

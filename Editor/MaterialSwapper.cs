@@ -32,7 +32,7 @@ namespace Elypha.UnityMaterialHelper
         private readonly Dictionary<Material, MaterialConfig> _materialConfigs = new();
 
 
-        [MenuItem("Elypha/Material Swapper")]
+        [MenuItem("Elypha/Material Swapper", false, 206)]
         public static void ShowWindow()
         {
             var window = GetWindow<MaterialSwapper>("Material Swapper");

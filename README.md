@@ -1,7 +1,5 @@
 # Introduction
 
-This repo only holds the src files.
+Installation: https://elypha.github.io/unity-packages/
 
-For changelog, please check out https://github.com/Elypha/unity-material-helper/releases.
-
-For installation and more information, please refer to the main repo https://github.com/Elypha/unity-packages.
+See https://github.com/Elypha/unity-packages for more information.

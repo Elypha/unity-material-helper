@@ -21,7 +21,7 @@ namespace Elypha.UnityMaterialHelper
         private readonly GuiMessage _guiMessage = new();
 
 
-        [MenuItem("Elypha/Soft Disable")]
+        [MenuItem("Elypha/Soft Disable", false, 210)]
         public static void ShowWindow()
         {
             var window = GetWindow<SoftDisableEditor>("Soft Disable");

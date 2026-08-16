@@ -8,7 +8,7 @@ namespace Elypha.UnityMaterialHelper
 {
     public class ComponentsViewer : EditorWindow
     {
-        [MenuItem("Elypha/Components Viewer")]
+        [MenuItem("Elypha/Components Viewer", false, 201)]
         public static void ShowWindow()
         {
             var window = GetWindow<ComponentsViewer>("Components Viewer");

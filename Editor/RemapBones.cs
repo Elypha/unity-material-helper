@@ -10,7 +10,7 @@ namespace Elypha.UnityMaterialHelper
 {
     public class RemapBones : EditorWindow
     {
-        [MenuItem("Elypha/Remap Bones")]
+        [MenuItem("Elypha/Remap Bones", false, 208)]
         public static void ShowWindow()
         {
             var window = GetWindow<RemapBones>("Remap Bones");

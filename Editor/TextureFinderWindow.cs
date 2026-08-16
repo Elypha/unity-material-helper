@@ -22,7 +22,7 @@ namespace Elypha.UnityMaterialHelper
             public TextureImporter Importer;
         }
 
-        [MenuItem("Elypha/Texture Finder")]
+        [MenuItem("Elypha/Texture Finder", false, 211)]
         public static void ShowWindow()
         {
             var window = GetWindow<TextureFinderWindow>("Texture Finder");

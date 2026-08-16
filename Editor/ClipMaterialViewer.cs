@@ -15,7 +15,7 @@ namespace Elypha.UnityMaterialHelper
         private readonly List<AnimatedPath> _processedPaths = new();
 
 
-        [MenuItem("Elypha/Animation Clip Material Viewer")]
+        [MenuItem("Elypha/Animation Clip Material Viewer", false, 200)]
         public static void ShowWindow()
         {
             GetWindow<AnimationClipViewerWindow>("Clip Material Viewer");
