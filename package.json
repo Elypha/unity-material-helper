@@ -1,16 +1,16 @@
 {
     "name": "com.elypha.unity-material-helper",
     "displayName": "Material Helper",
-    "description": "Help your daily work with Material swapping, editting and more.",
+    "description": "Unity Editor utilities for materials, textures, and shaders.",
     "author": {
         "name": "Elypha",
         "email": "i@elypha.com",
         "url": "https://elypha.com"
     },
     "url": "https://github.com/Elypha/unity-material-helper",
-    "version": "1.20.0",
+    "version": "1.21.0",
     "license": "AGPL-3.0-only",
-    "unity": "2020.3",
+    "unity": "2022.3",
     "vpmDependencies": {
         "com.vrchat.avatars": ">=3.1.0 <4.0.0"
     },
